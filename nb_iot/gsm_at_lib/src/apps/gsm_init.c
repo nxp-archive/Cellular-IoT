@@ -25,34 +25,6 @@ gsmr_t AT_Parser_Init(void)
     	configPRINTF(("Cannot initialize GSM-AT Library\r\n"));
     }
 
-//    /* Configure device by unlocking SIM card */
-//    if (configure_sim_card()) {
-//    	configPRINTF(("SIM card configured. Adding delay to stabilize SIM card.\r\n"));
-//        gsm_delay(10000);
-//    } else {
-//    	configPRINTF(("Cannot configure SIM card! Is it inserted, pin valid and not under PUK? Closing down...\r\n"));
-//        while (1) { gsm_delay(1000); }
-//    }
-//
-//    while (1) {
-//        /* Connect to network for TCP/IP */
-//        if (gsm_network_attach(NETWORK_APN, NETWORK_APN_USER, NETWORK_APN_PASS, NULL, NULL, 1) == gsmOK) {
-//            printf("Attached to network!\r\n");
-//
-//            /* Start netconn thread */
-//            gsm_sys_thread_create(NULL, "mqtt_thread", (gsm_sys_thread_fn)mqtt_client_api_thread, NULL, GSM_SYS_THREAD_SS, GSM_SYS_THREAD_PRIO);
-//            break;
-//        } else {
-//            printf("Cannot attach to network!\r\n");
-//            gsm_delay(1000);
-//        }
-//    }
-//
-//    while (1) {
-//        gsm_delay(1000);
-//    }
-//
-//    osThreadTerminate(NULL);                    /* Terminate current thread */
     result = gsmOK;
     return result;
 }

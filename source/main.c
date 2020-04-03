@@ -107,13 +107,6 @@ extern int initNetwork(void);
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-const WIFINetworkParams_t pxNetworkParams = {
-    .pcSSID           = clientcredentialWIFI_SSID,
-    .ucSSIDLength     = sizeof(clientcredentialWIFI_SSID) - 1,
-    .pcPassword       = clientcredentialWIFI_PASSWORD,
-    .ucPasswordLength = sizeof(clientcredentialWIFI_PASSWORD) - 1,
-    .xSecurity        = clientcredentialWIFI_SECURITY,
-};
 /* Count of LED */
 uint8_t ledCount = 3;
 /* Array of LED names */
@@ -126,63 +119,14 @@ char ledColors[] = "[\"red\", \"green\", \"blue\"]";
  ******************************************************************************/
 int initNetwork(void)
 {
-#if (CONNECTIVITY_SUPPORT==1)
-    WIFIReturnCode_t result;
-
-    configPRINTF(("Starting WiFi...\r\n"));
-
-    result = WIFI_On();
-    if (result != eWiFiSuccess)
-    {
-        configPRINTF(("Could not enable WiFi, reason %d.\r\n", result));
-        return INIT_FAIL;
-    }
-
-    configPRINTF(("WiFi module initialized.\r\n"));
-
-    result = WIFI_ConnectAP(&pxNetworkParams);
-    if (result != eWiFiSuccess)
-    {
-        configPRINTF(("Could not connect to WiFi, reason %d.\r\n", result));
-        return INIT_FAIL;
-    }
-
-    configPRINTF(("WiFi connected to AP %s.\r\n", pxNetworkParams.pcSSID));
-
-    uint8_t tmp_ip[4] = {0};
-    result            = WIFI_GetIP(tmp_ip);
-
-    if (result != eWiFiSuccess)
-    {
-        configPRINTF(("Could not get IP address, reason %d.\r\n", result));
-        return INIT_FAIL;
-    }
-
-    configPRINTF(("IP Address acquired %d.%d.%d.%d\r\n", tmp_ip[0], tmp_ip[1], tmp_ip[2], tmp_ip[3]));
-
-    return INIT_SUCCESS;
-#elif (CONNECTIVITY_SUPPORT==2)
     uint8_t result;
-    /* Previous UART initialization before the
-     * integration of the AT Parser Library
-     */
-//	configPRINTF(("Starting NB-IoT...\r\n"));
-//
-//	result = (uint8_t)NBIOT_On();
-//	if (result != eNbIoTSuccess)
-//	{
-//		configPRINTF(("Could not enable NB-IoT, reason %d.\r\n", result));
-//		return INIT_FAIL;
-//	}
-//
-//	configPRINTF(("NB-IoT module initialized.\r\n"));
 
     /*
      * Initialization of the AT Parser Library
      * It consists of:
      * - Creation of AT Command produce task (gsm_thread_produce) and its associated queue
      * - Creation of AT Command process task (gsm_thread_process) and its associated queue
-     * - Configuration of the low-level layers (Pins config, USART, DMA)
+     * - Configuration of the low-level layers (Pins config, USART, DMA, Timers)
      * - Creation of the USART Receiving task (usart_ll_thread)
      * - Reseting the NB-IoT module
      */
@@ -207,7 +151,7 @@ int initNetwork(void)
 	}
 	/* Do not enable this section, the certificates and private keys are already stored in the NB-IoT module */
 	/* The issue is that we get a +CME ERROR: 4 when sending one of these commands most of the time */
-#if 0
+#ifndef USE_TLS_IN_MCU
 	configPRINTF(("Erase CA certificate / client certificate / private key in the NB-IoT module\r\n"));
 	gsmr_t xResult;
 	xResult = gm01q_api_WriteCertKeyInNVM(NULL, SQNS_MQTT_CERTIFICATE, 0, 0, NULL, NULL, 1);
@@ -225,33 +169,15 @@ int initNetwork(void)
 	xResult = gm01q_api_WriteCertKeyInNVM(keyCLIENT_PRIVATE_KEY_PEM, SQNS_MQTT_PRIVATEKEY, 2, sizeof( keyCLIENT_PRIVATE_KEY_PEM ) - 1, NULL, NULL, 1 );
 	PRINTF("xResult:%d\n",xResult);
 #endif
+
+#ifdef DBG_ON_CELLULAR_MODULE
 	gm01q_api_setLogInModule();
 	gm01q_api_readConfTestMode();
-
-/*
-	result = WIFI_ConnectAP(&pxNetworkParams);
-	if (result != eWiFiSuccess)
-	{
-		configPRINTF(("Could not connect to WiFi, reason %d.\r\n", result));
-		return INIT_FAIL;
-	}
-
-	configPRINTF(("WiFi connected to AP %s.\r\n", pxNetworkParams.pcSSID));
-
-	uint8_t tmp_ip[4] = {0};
-	result            = WIFI_GetIP(tmp_ip);
-
-	if (result != eWiFiSuccess)
-	{
-		configPRINTF(("Could not get IP address, reason %d.\r\n", result));
-		return INIT_FAIL;
-	}
-
-	configPRINTF(("IP Address acquired %d.%d.%d.%d\r\n", tmp_ip[0], tmp_ip[1], tmp_ip[2], tmp_ip[3]));
-*/
-	return INIT_SUCCESS;
 #endif
+
+	return INIT_SUCCESS;
 }
+
 void turnOnLed(uint8_t id)
 {
     if (id == 0)
@@ -363,26 +289,6 @@ void vApplicationDaemonTaskStartupHook(void)
     /* A simple example to demonstrate key and certificate provisioning in
      * microcontroller flash using PKCS#11 interface. This should be replaced
      * by production ready key provisioning mechanism. */
-
-	/* Alex's Comment
-	 * Don't forget to change the certificate to use
-	 * the one specified by Sequans to be properly
-	 * connected to the AWS Cloud using NB-IoT
-	 * Refer to the following email exchange to understand
-	 *
-	 * Hello Alexandre,
-	 *
-	 * About the following action:
-	 * �	Am�lie to get more information on where the certificate that enabled connecting to AWS cloud comes from
-	 *
-	 * Actually, we found the right certificate to connect to AWS by doing a quick google search. We found the following article about AWS moving it root authority:
-	 * https://aws.amazon.com/blogs/security/how-to-prepare-for-aws-move-to-its-own-certificate-authority/
-	 *
-	 * In the article they provide a link to download the new root authority:
-	 * �	Note: as far as we understand, Amazon doesn�t own this root and doesn�t have a test URL for it. The certificate can be downloaded from here. (LINK INFO: https://certs.secureserver.net/repository/sf-class2-root.crt)
-	 * �	Note also that the Common Name on the cert from the link they provide matches Starfield Class 2 Certification Authority. This is a good indicator that you should have the right cert (ultimately it comes down to which private key was used to create the cert and sign the chain) � you need to check that you have this Name in your .crt (and not something like Amazon Root CA 1 which would not match � that�s what you had in the past and blocked you).
-	 *
-	 */
 	vDevModeKeyProvisioning();
 
     /*

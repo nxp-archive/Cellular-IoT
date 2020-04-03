@@ -74,8 +74,6 @@
 #define USART_TASK_PRIORITY ( (configMAX_PRIORITIES) - 1U )
 #define USART_TASK_STACKSIZE 1024
 
-#define USART_IRQHandler FLEXCOMM2_IRQHandler
-
 /* USART memory */
 //static uint8_t      usart_mem[GSM_USART_DMA_RX_BUFF_SIZE];
 static uint8_t      is_running, initialized;
@@ -166,6 +164,7 @@ configure_uart(uint32_t baudrate) {
 		return;
 	}
 
+	/* Set pointer to the current receive buffer and the previous one */
 	ptr_cur_buff = NBIOTSHIELD_USART_RX_BUFFER;
 	ptr_prv_buff = NBIOTSHIELD_USART_RING_BUFFER;
 
@@ -225,17 +224,17 @@ send_data(const void* data, size_t len) {
 		ptx++;
 	}
 #endif
-	if (len >0)
+	if( len > 0 )
 	{
 		do
 		{
-			if( len > 1024 )
+			if( len > AT_BUFFER_SIZE )
 			{
 				sendXfer.data = (uint8_t *)data;
-				sendXfer.dataSize = 1024;
+				sendXfer.dataSize = AT_BUFFER_SIZE;
 
-				data += 1024;
-				len -= 1024;
+				data += AT_BUFFER_SIZE;
+				len -= AT_BUFFER_SIZE;
 			}
 			else
 			{
@@ -304,40 +303,15 @@ gsm_ll_deinit(gsm_ll_t* ll) {
     return gsmOK;
 }
 
-/**
- * \brief           UART User Callback
- */
-
-/* USART user callback */
-void USART_UserCallback(USART_Type *base, usart_dma_handle_t *handle, status_t status, void *userData)
-{
-//	userData = userData;
-//
-//	if (kStatus_USART_TxIdle == status)
-//	{
-//		if (usart_ll_mbox_id != NULL)
-//		{
-//			uint8_t mbox_msg = 0;
-//			gsm_sys_mbox_put(&usart_ll_mbox_id, &mbox_msg);
-//		}
-//	}
-//
-//	if (kStatus_USART_RxIdle == status)
-//	{
-//		if (usart_ll_mbox_id != NULL)
-//		{
-//			uint8_t mbox_msg = 0;
-//			gsm_sys_mbox_put(&usart_ll_mbox_id, &mbox_msg);
-//		}
-//	}
-}
 
 /**
  * \brief           UART DMA stream/channel handler
  */
-
 void DMA_Callback(dma_handle_t *handle, void *param, bool transferDone, uint32_t tcds)
 {
+	/* When DMA Channel 0 descriptor is exhausting,
+	 * we need to switch RX buffer
+	 */
     if (tcds == kDMA_IntA)
     {
     	/* Descriptor has expired so the current buffer has changed */
@@ -355,29 +329,6 @@ void DMA_Callback(dma_handle_t *handle, void *param, bool transferDone, uint32_t
     buff_jump++;
 }
 
-/**
- * \brief           UART global interrupt handler
- */
-
-void USART_IRQHandler(void)
-{
-      /* Data has arrived since the rxWatermark is set to kUSART_RxFifo1 */
-//	if (usart_ll_mbox_id != NULL)
-//	{
-//		uint8_t mbox_msg = 0;
-//		//gsm_sys_mbox_put(&usart_ll_mbox_id, &mbox_msg);
-//	    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-//	    xQueueSendToBackFromISR(usart_ll_mbox_id, &mbox_msg, &xHigherPriorityTaskWoken); /* Put new message for ISR API */
-//		/* Now the buffer is empty we can switch context if necessary. */
-//		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-//	}
-
-/* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
-  exception return operation might vector to incorrect interrupt */
-#if defined __CORTEX_M && (__CORTEX_M == 4U)
-    __DSB();
-#endif
-}
 
 void MRT0_IRQHandler(void)
 {
@@ -400,6 +351,7 @@ void MRT0_IRQHandler(void)
 		}
 	}
 }
+
 
 void Timer_CallbackHandler( uint32_t flags )
 {

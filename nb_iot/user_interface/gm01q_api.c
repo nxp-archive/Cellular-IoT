@@ -904,20 +904,21 @@ gm01q_api_socketClose(uint32_t connId)
 gsmr_t
 gm01q_api_setLogInModule(void)
 {
-//	GSM_MSG_VAR_DEFINE(msg);
-//
-//	GSM_MSG_VAR_ALLOC(msg, 1);
-//	GSM_MSG_VAR_REF(msg).cmd_def = GSM_CMD_SQNSLG;
-//
-//	gsmi_send_msg_to_producer_mbox(&GSM_MSG_VAR_REF(msg), gsmi_initiate_cmd, 60000);
-//
-//	GSM_MSG_VAR_DEFINE(msg_2);
-//
-//	GSM_MSG_VAR_ALLOC(msg_2, 1);
-//	GSM_MSG_VAR_REF(msg_2).cmd_def = GSM_CMD_SQNPLG;
-//	return gsmi_send_msg_to_producer_mbox(&GSM_MSG_VAR_REF(msg_2), gsmi_initiate_cmd, 60000);
-
 	GSM_MSG_VAR_DEFINE(msg);
+
+	GSM_MSG_VAR_ALLOC(msg, 1);
+	GSM_MSG_VAR_REF(msg).cmd_def = GSM_CMD_SQNSLG;
+
+	gsmi_send_msg_to_producer_mbox(&GSM_MSG_VAR_REF(msg), gsmi_initiate_cmd, 60000);
+
+	GSM_MEMSET(msg, 0x00, sizeof(*(msg)));
+
+	GSM_MSG_VAR_ALLOC(msg, 1);
+	GSM_MSG_VAR_REF(msg).cmd_def = GSM_CMD_SQNPLG;
+	return gsmi_send_msg_to_producer_mbox(&GSM_MSG_VAR_REF(msg), gsmi_initiate_cmd, 60000);
+
+	/* Disable HpPlmn Search */
+	GSM_MEMSET(msg, 0x00, sizeof(*(msg)));
 
 	GSM_MSG_VAR_ALLOC(msg, 1);
 	GSM_MSG_VAR_REF(msg).cmd_def = GSM_CMD_SQNDISHPPLMN;

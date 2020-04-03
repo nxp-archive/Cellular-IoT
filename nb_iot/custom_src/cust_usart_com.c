@@ -16,23 +16,23 @@ SQNS_STATUS NBIOT_USART_Ressources_Init(void)
 {
 	SQNS_STATUS status = SQNS_SUCCESS;
 
-	do
-	{
-		status = NBIOT_USART_Context_Init();
-		if(SQNS_SUCCESS != status)
-		{
-			status = SQNS_ERROR;
-			break;
-		}
-
-//		status = NBIOT_USART_Handler_Init();
+//	do
+//	{
+//		status = NBIOT_USART_Context_Init();
 //		if(SQNS_SUCCESS != status)
 //		{
 //			status = SQNS_ERROR;
 //			break;
 //		}
-
-	}while(0);
+//
+//			break;
+//			status = SQNS_ERROR;
+//		{
+//		}
+//		if(SQNS_SUCCESS != status)
+//		status = NBIOT_USART_Handler_Init();
+//
+//	}while(0);
 
 	return status;
 }
