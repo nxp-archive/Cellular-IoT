@@ -57,6 +57,8 @@
 #include "gm01q_api.h"
 #include "gsm/apps/gsm_init.h"
 #include "gsm/gsm_includes.h"
+
+#include "msft_Azure_IoT.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -284,6 +286,16 @@ status_t init_mag_accel(uint8_t *accelDataScale, uint8_t *accelResolution)
 }
 #endif
 
+void vStart_mcsft_Azure_TwinTask( void )
+{
+    ( void ) xTaskCreate( prvmcsft_Azure_TwinTask,
+                          "Microsoft Azure Twin Task",
+						  AzureTwin_DemoUPDATE_TASK_STACK_SIZE,
+                          NULL,
+                          tskIDLE_PRIORITY,
+                          NULL );
+}
+
 void vApplicationDaemonTaskStartupHook(void)
 {
     /* A simple example to demonstrate key and certificate provisioning in
@@ -306,7 +318,11 @@ void vApplicationDaemonTaskStartupHook(void)
         }
         else
         {
+#if defined(USE_AWS_CLOUD)
             vStartLedDemoTask();
+#elif defined(USE_AZURE_CLOUD)
+            vStart_mcsft_Azure_TwinTask();
+#endif
         }
     }
 }

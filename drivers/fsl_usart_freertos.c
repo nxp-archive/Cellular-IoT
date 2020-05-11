@@ -298,7 +298,8 @@ int USART_RTOS_Receive(usart_rtos_handle_t *handle, uint8_t *buffer, uint32_t le
     USART_TransferReceiveNonBlocking(handle->base, handle->t_state, &handle->rxTransfer, &n);
 
     ev = xEventGroupWaitBits(handle->rxEvent, RTOS_USART_COMPLETE | RTOS_USART_RING_BUFFER_OVERRUN, pdTRUE, pdFALSE,
-                             portMAX_DELAY);
+                             //portMAX_DELAY); /* Alex Modif */
+    						 pdMS_TO_TICKS(100));
     if (ev & RTOS_USART_RING_BUFFER_OVERRUN)
     {
         /* Stop data transfer to application buffer, ring buffer is still active */
