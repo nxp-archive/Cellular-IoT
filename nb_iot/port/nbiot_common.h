@@ -1,8 +1,8 @@
 /*
- * nbiot_common.h
+ * Copyright 2020 NXP
+ * All rights reserved.
  *
- *  Created on: 22 oct. 2019
- *      Author: nxf37702
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #ifndef SHIELDS_NBIOT_COMMON_H_

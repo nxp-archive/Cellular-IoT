@@ -1,8 +1,8 @@
 /*
- * gm01q_tools.h
+ * Copyright 2020 NXP
+ * All rights reserved.
  *
- *  Created on: 27 juin 2019
- *      Author: nxf41880
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #ifndef GM01Q_TOOLS_H_

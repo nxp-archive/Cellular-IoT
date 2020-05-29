@@ -1,8 +1,8 @@
 /*
- * gsm_sys_user.h
+ * Copyright 2020 NXP
+ * All rights reserved.
  *
- *  Created on: 7 janv. 2020
- *      Author: nxf37702
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #ifndef GSM_HDR_SYSTEM_H

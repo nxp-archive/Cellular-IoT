@@ -1,3 +1,10 @@
+/*
+ * Copyright 2020 NXP
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #include "nbiot_common.h"
 #include "cust_usart_com.h"
 #include "gm01q_api.h"

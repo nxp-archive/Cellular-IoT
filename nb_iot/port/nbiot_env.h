@@ -1,8 +1,8 @@
 /*
- * nbiot_env.h
+ * Copyright 2020 NXP
+ * All rights reserved.
  *
- *  Created on: 22 oct. 2019
- *      Author: nxf37702
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #ifndef PORT_NBIOT_ENV_H_
