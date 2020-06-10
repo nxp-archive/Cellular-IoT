@@ -1,6 +1,7 @@
 /.settings/
 /Debug/
-lpcxpresso55s69_aws_remote_control_NB-IoT_v1.6.7 LinkServer Debug.launch
-ReadMe.txt
+lpcxpresso55s69_aws_remote_control_NB-IoT* LinkServer Debug.launch
 /amazon-freertos/demos/aws_clientcredential.h
 /amazon-freertos/demos/aws_clientcredential_keys.h
+/msft_Azure_IoT/msft_Azure_IoT_clientcredential.h
+/msft_Azure_IoT/msft_Azure_IoT_clientcredential_keys.h
