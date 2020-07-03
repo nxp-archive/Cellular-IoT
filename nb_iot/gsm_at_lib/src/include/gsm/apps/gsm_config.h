@@ -44,7 +44,10 @@
 #define GSM_CFG_AT_ECHO                     0
 #define GSM_CFG_SYS_PORT                    GSM_SYS_PORT_USER
 #define GSM_CFG_INPUT_USE_PROCESS           1	/* Need to be enabled when DMA support will be enabled */
-#define GSM_CFG_AT_PORT_BAUDRATE            921600
+#define GSM_CFG_AT_PORT_BAUDRATE_115200     115200U
+#define GSM_CFG_AT_PORT_BAUDRATE_921600     921600U
+#define GSM_CFG_AT_PORT_BAUDRATE			GSM_CFG_AT_PORT_BAUDRATE_115200
+
 
 /* Enable network, conn and netconn APIs */
 #define GSM_CFG_NETWORK                     1

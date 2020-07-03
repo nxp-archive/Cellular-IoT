@@ -138,7 +138,7 @@ static BaseType_t prvNetworkSend( void * pvContext,
     return ret;
 
 #else
-  // Send Data using AT commands
+    /* Send Data using AT commands */
     if(  gm01q_api_socketSend( gsm.m.conn_val_id , pucData , xDataLength ) == gsmOK )
     {
     	vTaskDelay(pdMS_TO_TICKS(200));
@@ -227,15 +227,22 @@ static BaseType_t prvNetworkRecv( void * pvContext,
         zero_copy_free( buffLoc );
     }
 #else
-    // implement AT command to receive
+    /* implement AT command to receive */
+//    uint32_t i = 0;
+//    do
+//    {
+//    	vTaskDelay(pdMS_TO_TICKS(1));
+//    	xRetVal = gm01q_api_socketReadData( gsm.m.conn_val_id, pucReceiveBuffer , xReceiveLength );
+//    	if( xRetVal > 0 )
+//    		break;
+//    }while( ++i < 500 );
     uint32_t i = 0;
     do
     {
-    	vTaskDelay(pdMS_TO_TICKS(1));
     	xRetVal = gm01q_api_socketReadData( gsm.m.conn_val_id, pucReceiveBuffer , xReceiveLength );
-    	if( xRetVal > 0 )
-    		break;
-    }while( ++i < 500 );
+    	if( 0 == xRetVal )
+    		vTaskDelay(pdMS_TO_TICKS(1));
+    }while( 0 == xRetVal && ++i < 500);
 #endif
 
     return xRetVal;

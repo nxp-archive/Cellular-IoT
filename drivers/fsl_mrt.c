@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "../../lpcxpresso55s69_aws_remote_control_NB-IoT/drivers/fsl_mrt.h"
+#include "fsl_mrt.h"
 
 /* Component ID definition, used by tools. */
 #ifndef FSL_COMPONENT_ID

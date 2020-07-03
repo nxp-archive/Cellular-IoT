@@ -61,7 +61,7 @@ static char Scratch_Buffer[100];
 EventGroupHandle_t xCreatedEventGroup;
 
 static int Temp_Coeff;
-static int Hot_Temp;
+//static int Hot_Temp;
 static int Room_Temp;
 //extern uint16_t * melody;
 //extern uint16_t melody1[];

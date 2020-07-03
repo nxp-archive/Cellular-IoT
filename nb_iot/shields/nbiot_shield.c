@@ -89,7 +89,7 @@ int NBIOTSHIELD_USARTConfig( uint32_t baudrate )
 	usart_config.enableTx     = true;
 	usart_config.enableRx     = true;
 
-	USART_Init(NBIOTSHIELD_USART, &usart_config, CLOCK_GetFreq(NBIOTSHIELD_USART_CLK));
+	USART_Init(NBIOTSHIELD_USART, &usart_config, CLOCK_GetFlexCommClkFreq(USART_GetInstance(NBIOTSHIELD_USART)));
 
 	USART_EnableCTS(NBIOTSHIELD_USART, true);
 

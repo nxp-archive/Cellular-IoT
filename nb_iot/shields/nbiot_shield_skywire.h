@@ -32,7 +32,7 @@ extern dma_handle_t g_timerTransferHandle;
 
 /* USART settings */
 #define NBIOTSHIELD_USART (USART2)
-#define NBIOTSHIELD_USART_CLK (kCLOCK_Flexcomm2)
+#define NBIOTSHIELD_USART_CLK ((clock_ip_name_t)kCLOCK_FlexComm2)
 #define NBIOTSHIELD_USART_CLK_CONNECT (kFRO12M_to_FLEXCOMM2)
 #define NBIOTSHIELD_USART_IP_RESET (kFC2_RST_SHIFT_RSTn)
 #define NBIOTSHIELD_USART_BAUDRATE (921600U)

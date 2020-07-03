@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 NXP
+ * Copyright 2017, 2019 NXP
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -31,16 +31,12 @@ void RNG_Init(RNG_Type *base)
 #if !(defined(FSL_SDK_DISABLE_DRIVER_CLOCK_CONTROL) && FSL_SDK_DISABLE_DRIVER_CLOCK_CONTROL)
     CLOCK_EnableClock(kCLOCK_Rng);
 #endif /* FSL_SDK_DISABLE_DRIVER_CLOCK_CONTROL */
-    /* Clear POWERDOWN bit to enable RNG */
-    base->POWERDOWN &= ~RNG_POWERDOWN_POWERDOWN_MASK;
 }
 
 void RNG_Deinit(RNG_Type *base)
 {
     /* Set ring oscilator disable bit*/
     PMC->PDRUNCFGSET0 = PMC_PDRUNCFG0_PDEN_RNG_MASK;
-    /* Set POWERDOWN bit to disable RNG */
-    base->POWERDOWN |= RNG_POWERDOWN_POWERDOWN_MASK;
 #if !(defined(FSL_SDK_DISABLE_DRIVER_CLOCK_CONTROL) && FSL_SDK_DISABLE_DRIVER_CLOCK_CONTROL)
     CLOCK_DisableClock(kCLOCK_Rng);
 #endif /* FSL_SDK_DISABLE_DRIVER_CLOCK_CONTROL */
@@ -56,20 +52,20 @@ status_t RNG_GetRandomData(RNG_Type *base, void *data, size_t dataSize)
     uint32_t i;
 
     /* Check input parameters.*/
-    if (!(base && data && dataSize))
+    if (!((base != NULL) && (data != NULL) && (dataSize != 0U)))
     {
         result = kStatus_InvalidArgument;
     }
     else
     {
         /* Check that ring oscilator is enabled */
-        if (!(PMC->PDRUNCFG0 & PMC_PDRUNCFG0_PDEN_RNG_MASK))
+        if (0U == (PMC->PDRUNCFG0 & PMC_PDRUNCFG0_PDEN_RNG_MASK))
         {
             do
             {
                 /* Read Entropy.*/
                 random32 = base->RANDOM_NUMBER;
-                pRandom = (uint8_t *)&random32;
+                pRandom  = (uint8_t *)&random32;
 
                 if (dataSize < sizeof(random32))
                 {
@@ -86,7 +82,7 @@ status_t RNG_GetRandomData(RNG_Type *base, void *data, size_t dataSize)
                 }
 
                 dataSize -= randomSize;
-            } while (dataSize > 0);
+            } while (dataSize > 0U);
 
             result = kStatus_Success;
         }

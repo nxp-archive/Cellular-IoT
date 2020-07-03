@@ -17,15 +17,15 @@
  */
 gsmr_t AT_Parser_Init(void)
 {
-	gsmr_t result;
+	gsmr_t result = gsmERR;
 	configPRINTF(("Starting GSM application!\r\n"));
 
     /* Initialize GSM with default callback function */
-    if (gsm_init(gsm_callback_func, 1) != gsmOK) {
+	result = gsm_init(gsm_callback_func, 1);
+    if (result != gsmOK) {
     	configPRINTF(("Cannot initialize GSM-AT Library\r\n"));
     }
 
-    result = gsmOK;
     return result;
 }
 

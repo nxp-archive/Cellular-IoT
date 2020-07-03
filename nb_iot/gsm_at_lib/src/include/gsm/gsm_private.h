@@ -277,6 +277,7 @@ typedef enum {
 	GSM_CMD_SQNPLG,
 	GSM_CMD_SQNDISHPPLMN,
 	GSM_CMD_SQNCTM_INFO,						/*!< Read the current conformance test mode */
+	GSM_CMD_SQNCTM_SET,							/*!< Set the current conformance test mode */
 #endif /* GSM_SEQUANS_SPECIFIC_CMD */
 
     GSM_CMD_END,                                /*!< Last CMD entry */
@@ -566,15 +567,15 @@ typedef struct gsm_msg {
 
 		struct {
 			uint8_t connId;						/*!< Connection ID, must be between 1 and GSM_CFG_MAX_CONNS */
-			const unsigned char* ptrTx;			/* pointer to the data to be sent */
-			uint32_t Txsize;						/* size of the data to send */
+			const unsigned char* ptrTx;			/*!< Pointer to the data to be sent */
+			uint32_t Txsize;					/*!< Size of the data to send */
 			uint8_t TxError;
 		}tx_data;
 
 		struct {
-			uint32_t Rxsize;
+			uint32_t Rxsize;					/*!< Maximum number of RX bytes to be received [1-1500] */
 			uint8_t connId;						/*!< Connection ID, must be between 1 and GSM_CFG_MAX_CONNS */
-			unsigned char* pptrRx;
+			unsigned char* pptrRx;				/*!< Pointer to the RX buffer */
 		}rx_data;
 		struct {
 			uint8_t connId;						/*!< Connection ID, must be between 1 and GSM_CFG_MAX_CONNS */
@@ -607,6 +608,9 @@ typedef struct gsm_msg {
 			uint16_t connTo;					/*!< Listen auto-response mode”, that affects AT+SQNSL command */
 			uint8_t txTo;						/*!< Sent data view mode presentation format */
 		} socket_cfg;							/*!< sets the socket configuration extended parameters */
+		struct {
+			const char* ctm;               		/*!< Conformance Test Mode */
+		} set_conformance_test;
 
 #endif /* GSM_SEQUANS_SPECIFIC_CMD || __DOXYGEN__ */
     } msg;                                      /*!< Group of different possible message contents */

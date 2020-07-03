@@ -75,6 +75,7 @@
 #define configGENERATE_RUN_TIME_STATS                0
 #define configOVERRIDE_DEFAULT_TICK_CONFIGURATION    0
 #define configRECORD_STACK_HIGH_ADDRESS              1
+//#define configAPPLICATION_ALLOCATED_HEAP			 1
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES                        0

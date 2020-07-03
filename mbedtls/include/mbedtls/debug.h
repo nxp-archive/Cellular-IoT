@@ -66,9 +66,27 @@
 #endif
 
 #else /* MBEDTLS_DEBUG_C */
+/*
+#define MBEDTLS_SSL_DEBUG_MSG( level, args )            do 							\
+														{ 							\
+															if( level <= 2 ) 		\
+															{						\
+																PRINTF args ; 		\
+																PRINTF( "\r\n");	\
+															}						\
+														} while( 0 )
 
-#define MBEDTLS_SSL_DEBUG_MSG( level, args )            do { /*PRINTF args ; PRINTF( "\r\n");*/} while( 0 )
-#define MBEDTLS_SSL_DEBUG_RET( level, text, ret )       do { } while( 0 )
+#define MBEDTLS_SSL_DEBUG_RET( level, text, ret )       do 							\
+														{ 							\
+															if( level <= 2 ) 		\
+															{						\
+																PRINTF("%s   ret:%d",text,ret );		\
+																PRINTF( "\r\n");	\
+															}						\
+														} while( 0 )
+														*/
+#define MBEDTLS_SSL_DEBUG_MSG( level, args )			do { } while( 0 )
+#define MBEDTLS_SSL_DEBUG_RET( level, text, ret ) 		do { } while( 0 )
 #define MBEDTLS_SSL_DEBUG_BUF( level, text, buf, len )  do { } while( 0 )
 #define MBEDTLS_SSL_DEBUG_MPI( level, text, X )         do { } while( 0 )
 #define MBEDTLS_SSL_DEBUG_ECP( level, text, X )         do { } while( 0 )

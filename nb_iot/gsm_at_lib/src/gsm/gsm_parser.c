@@ -1062,7 +1062,7 @@ gsmi_parse_rcvdata_update(const char* str)
 uint8_t
 gsmi_parse_rcvdata_ntf(const char* str)
 {
-	uint32_t conn_id, read_count, ret = 0;
+	uint32_t ret = 0;
 	char * ptx = (char *) str;
 
 	if(gsm.m.conn_val_id > GSM_CFG_MAX_CONNS)
@@ -1073,15 +1073,10 @@ gsmi_parse_rcvdata_ntf(const char* str)
 	/* Jump directly to the number by skipping '+SQNSRECV: ' */
 	ptx += 11;
 
-	conn_id = ( uint32_t ) gsmi_parse_number( (const char**) &ptx);
-	read_count = ( uint32_t ) gsmi_parse_number( (const char**) &ptx);
+	gsm.msg->msg.rx_data.connId = ( uint32_t ) gsmi_parse_number( (const char**) &ptx);
+	gsm.msg->msg.rx_data.Rxsize = ( uint32_t ) gsmi_parse_number( (const char**) &ptx);
 
-	if(!gm01q_api_socketUpdateRXData_Pending_Info( conn_id , read_count ))
-	{
-		gsm.msg->msg.rx_data.connId = conn_id;
-		gsm.msg->msg.rx_data.Rxsize = read_count;
-		ret = 1;
-	}
+	ret = 1;
 
 	return ret;
 }

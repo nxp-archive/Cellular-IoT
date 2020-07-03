@@ -116,6 +116,10 @@ const char *ledName[] = {"LED RED", "LED GREEN", "LED BLUE"};
 /* Array of LED colors in JSON */
 char ledColors[] = "[\"red\", \"green\", \"blue\"]";
 
+#if 0
+/* Application defined FreeRTOS Heap */
+uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] __attribute__ ((section(".heap")));
+#endif
 /*******************************************************************************
  * Code
  ******************************************************************************/
@@ -174,6 +178,7 @@ int initNetwork(void)
 
 #ifdef DBG_ON_CELLULAR_MODULE
 	gm01q_api_setLogInModule();
+	gm01q_api_setConfTestMode("truphone", NULL, NULL, 1);
 	gm01q_api_readConfTestMode();
 #endif
 

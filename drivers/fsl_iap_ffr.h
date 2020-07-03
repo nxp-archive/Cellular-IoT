@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 NXP
+ * Copyright 2018-2020 NXP
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -26,7 +26,7 @@
  * @{
  */
 /*! @brief Flash IFR driver version for SDK*/
-#define FSL_FLASH_IFR_DRIVER_VERSION (MAKE_VERSION(2, 0, 0)) /*!< Version 2.0.0. */
+#define FSL_FLASH_IFR_DRIVER_VERSION (MAKE_VERSION(2, 1, 3)) /*!< Version 2.1.3. */
 /*@}*/
 
 /*! @brief Alignment(down) utility. */
@@ -226,20 +226,34 @@ typedef enum _ffr_bank_type
 extern "C" {
 #endif
 
-/*! Generic APIs for FFR */
+/*!
+ * @name FFR APIs
+ * @{
+ */
+
+/*! Initializes the global FFR properties structure members.*/
 status_t FFR_Init(flash_config_t *config);
+
+/*!
+ * @brief Enable firewall for all flash banks.
+ * FFR region will be locked, After this function executed.
+ */
 status_t FFR_Deinit(flash_config_t *config);
 
 /*! APIs to access CFPA pages */
-status_t FFR_CustomerPagesInit(flash_config_t *config);
 status_t FFR_InfieldPageWrite(flash_config_t *config, uint8_t *page_data, uint32_t valid_len);
-/*! Read data stored in 'Customer In-field Page'. */
+/*! Generic read function, used by customer to read data stored in 'Customer In-field Page. */
 status_t FFR_GetCustomerInfieldData(flash_config_t *config, uint8_t *pData, uint32_t offset, uint32_t len);
 
 /*! APIs to access CMPA pages */
-bool FFR_IsCmpaCfgPageUpdateInProgress(flash_config_t *config);
-status_t FFR_RecoverCmpaCfgPage(flash_config_t *config);
-status_t FFR_ProcessCmpaCfgPageUpdate(flash_config_t *config, cmpa_prog_process_t option);
+/*!
+ * @brief This routine will erase "customer factory page" and program the page with passed data.
+ * If 'seal_part' parameter is TRUE then the routine will compute SHA256 hash of
+ * the page contents and then programs the pages.
+ * 1.During development customer code uses this API with 'seal_part' set to FALSE.
+ * 2.During manufacturing this parameter should be set to TRUE to seal the part
+ * from further modifications
+ */
 status_t FFR_CustFactoryPageWrite(flash_config_t *config, uint8_t *page_data, bool seal_part);
 /*! Read data stored in 'Customer Factory CFG Page'. */
 status_t FFR_GetCustomerData(flash_config_t *config, uint8_t *pData, uint32_t offset, uint32_t len);
@@ -248,14 +262,13 @@ status_t FFR_KeystoreGetAC(flash_config_t *config, uint8_t *pActivationCode);
 status_t FFR_KeystoreGetKC(flash_config_t *config, uint8_t *pKeyCode, ffr_key_type_t keyIndex);
 
 /*! APIs to access NMPA pages */
-status_t FFR_NxpAreaCheckIntegrity(flash_config_t *config);
-status_t FFR_GetRompatchData(flash_config_t *config, uint8_t *pData, uint32_t offset, uint32_t len);
 /*! Read data stored in 'NXP Manufacuring Programmed CFG Page'. */
-status_t FFR_GetManufactureData(flash_config_t *config, uint8_t *pData, uint32_t offset, uint32_t len);
 status_t FFR_GetUUID(flash_config_t *config, uint8_t *uuid);
 
 #ifdef __cplusplus
 }
 #endif
+
+/*@}*/
 
 #endif /*! __FSL_FLASH_FFR_H_ */

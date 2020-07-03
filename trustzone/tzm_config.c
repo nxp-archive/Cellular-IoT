@@ -10,7 +10,7 @@ product: TEE v1.0
 processor: LPC55S69
 package_id: LPC55S69JBD100
 mcu_data: ksdk2_0
-processor_version: 6.0.1
+processor_version: 7.0.1
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
@@ -18,9 +18,9 @@ processor_version: 6.0.1
 #include "tzm_config.h"
 
 
-//********************************************************************
-//*** Definitions ****************************************************
-//********************************************************************
+/*********************************************************************
+ * Definitions
+ ********************************************************************/
 
 /* clang-format off */
 /* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
@@ -70,6 +70,7 @@ tee:
         id: '9'}
 - sau:
   - enabled: 'false'
+  - all_non_secure: 'false'
   - generate_code_for_disabled_regions: 'false'
   - regions:
     - region: {index: '0', enabled: 'false', security: ns, start: '0x00000000', size: '0x00000020'}
@@ -101,9 +102,9 @@ tee:
 void BOARD_InitTrustZone()
 {
 
-	//####################################################################
-	//### SAU configuration ##############################################
-	//####################################################################
+	/*####################################################################
+	 # SAU configuration
+	 ###################################################################*/
 
 	/* Set SAU Control register: Disable SAU and All Secure */
 	SAU->CTRL = 0;
@@ -116,13 +117,13 @@ void BOARD_InitTrustZone()
 	SAU->CTRL = 0;
 
 
-	//####################################################################
-	//### AHB Configurations #############################################
-	//####################################################################
+	/*####################################################################
+	 # AHB Configurations
+	 ###################################################################*/
 
-	//--------------------------------------------------------------------
-	//--- AHB Security Level Configurations ------------------------------
-	//--------------------------------------------------------------------
+	/*--------------------------------------------------------------------
+	 - AHB Security Level Configurations
+	 -------------------------------------------------------------------*/
 	/* Configuration of AHB Secure Controller
 	 * Possible values for every memory sector or peripheral rule:
 	 *  0    Non-secure, user access allowed.
@@ -130,7 +131,7 @@ void BOARD_InitTrustZone()
 	 *  2    Secure, user access allowed.
 	 *  3    Secure, privileged access allowed. */
 
-	//--- Security level configuration of memories -----------------------
+	/* Security level configuration of memories */
 	AHB_SECURE_CTRL->SEC_CTRL_FLASH_ROM[0].SEC_CTRL_FLASH_MEM_RULE[0] = 0;
 	AHB_SECURE_CTRL->SEC_CTRL_FLASH_ROM[0].SEC_CTRL_FLASH_MEM_RULE[1] = 0;
 	AHB_SECURE_CTRL->SEC_CTRL_FLASH_ROM[0].SEC_CTRL_FLASH_MEM_RULE[2] = 0;
@@ -150,7 +151,7 @@ void BOARD_InitTrustZone()
 	AHB_SECURE_CTRL->SEC_CTRL_RAM4[0].MEM_RULE[0] = 0;
 	AHB_SECURE_CTRL->SEC_CTRL_USB_HS[0].MEM_RULE[0] = 0;
 
-	//--- Security level configuration of peripherals --------------------
+	/* Security level configuration of peripherals */
 	AHB_SECURE_CTRL->SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0 = 0;
 	AHB_SECURE_CTRL->SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL1 = 0;
 	AHB_SECURE_CTRL->SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL2 = 0;
@@ -158,50 +159,47 @@ void BOARD_InitTrustZone()
 	AHB_SECURE_CTRL->SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL1 = 0;
 	AHB_SECURE_CTRL->SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL2 = 0;
 	AHB_SECURE_CTRL->SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL3 = 0;
-	AHB_SECURE_CTRL->SEC_CTRL_AHB0_0_SLAVE_RULE = 0;
-	AHB_SECURE_CTRL->SEC_CTRL_AHB0_1_SLAVE_RULE = 0;
-	AHB_SECURE_CTRL->SEC_CTRL_AHB1_0_SLAVE_RULE = 0;
-	AHB_SECURE_CTRL->SEC_CTRL_AHB1_1_SLAVE_RULE = 0;
-	AHB_SECURE_CTRL->SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE = 0;
-	AHB_SECURE_CTRL->SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_1_SLAVE_RULE = 0;
+	AHB_SECURE_CTRL->SEC_CTRL_AHB_PORT8_SLAVE0_RULE = 0;
+	AHB_SECURE_CTRL->SEC_CTRL_AHB_PORT8_SLAVE1_RULE = 0;
+	AHB_SECURE_CTRL->SEC_CTRL_AHB_PORT9_SLAVE0_RULE = 0;
+	AHB_SECURE_CTRL->SEC_CTRL_AHB_PORT9_SLAVE1_RULE = 0;
+	AHB_SECURE_CTRL->SEC_CTRL_AHB_PORT10[0].SLAVE0_RULE = 0;
+	AHB_SECURE_CTRL->SEC_CTRL_AHB_PORT10[0].SLAVE1_RULE = 0;
 
-	//--- Security level configuration of masters ------------------------
-	AHB_SECURE_CTRL->MASTER_SEC_LEVEL = 0;
-	AHB_SECURE_CTRL->MASTER_SEC_ANTI_POL_REG = 0x3FFFFFFFU;
+	/* Security level configuration of masters */
+	AHB_SECURE_CTRL->MASTER_SEC_LEVEL = 0x80000000U;
+	AHB_SECURE_CTRL->MASTER_SEC_ANTI_POL_REG = 0xBFFFFFFFU;
 
-	//--------------------------------------------------------------------
-	//--- Pins: Reading GPIO state ---------------------------------------
-	//--------------------------------------------------------------------
-	// Possible values for every pin:
-	//  0b0    Deny
-	//  0b1    Allow
-	//--------------------------------------------------------------------
+	/*--------------------------------------------------------------------
+	 - Pins: Reading GPIO state
+	 -------------------------------------------------------------------*/
+	/* Possible values for every pin:
+	 *  0b0    Deny
+	 *  0b1    Allow */
 	AHB_SECURE_CTRL->SEC_GPIO_MASK0 = 0xFFFFFFFFU;
 	AHB_SECURE_CTRL->SEC_GPIO_MASK1 = 0xFFFFFFFFU;
 
-	//--------------------------------------------------------------------
-	//--- Interrupts: Interrupt handling by Core1 ------------------------
-	//--------------------------------------------------------------------
-	// Possible values for every interrupt:
-	//  0b0    Deny
-	//  0b1    Allow
-	//--------------------------------------------------------------------
+	/*--------------------------------------------------------------------
+	 - Interrupts: Interrupt handling by Core1
+	 -------------------------------------------------------------------*/
+	/* Possible values for every interrupt:
+	 *  0b0    Deny
+	 *  0b1    Allow */
 	AHB_SECURE_CTRL->SEC_CPU_INT_MASK0 = 0xFFFFFFFFU;
 	AHB_SECURE_CTRL->SEC_CPU_INT_MASK1 = 0xFFFFFFFFU;
 
-	//--------------------------------------------------------------------
-	//--- Interrupts: Interrupt security configuration -------------------
-	//--------------------------------------------------------------------
-	// Possible values for every interrupt:
-	//  0b0    Secure
-	//  0b1    Non-secure
-	//--------------------------------------------------------------------
+	/*--------------------------------------------------------------------
+	 - Interrupts: Interrupt security configuration
+	 -------------------------------------------------------------------*/
+	/* Possible values for every interrupt:
+	 *  0b0    Secure
+	 *  0b1    Non-secure */
 	NVIC->ITNS[0] = 0;
 	NVIC->ITNS[1] = 0;
 
-	//--------------------------------------------------------------------
-	//--- Global Options -------------------------------------------------
-	//--------------------------------------------------------------------
+	/*####################################################################
+	 # Global Options
+	 ###################################################################*/
 	SCB->AIRCR = (SCB->AIRCR & 0x000009FF7U) | 0x005FA0000U;
 	SCB->SCR &= 0x0FFFFFFF7U;
 	SCB->SHCSR &= 0x0FFF7FFFFU;
@@ -210,8 +208,8 @@ void BOARD_InitTrustZone()
 	AHB_SECURE_CTRL->SEC_MASK_LOCK = 0x00000AAAU;
 	AHB_SECURE_CTRL->MASTER_SEC_LEVEL = (AHB_SECURE_CTRL->MASTER_SEC_LEVEL & 0x03FFFFFFFU) | 0x080000000U;
 	AHB_SECURE_CTRL->MASTER_SEC_ANTI_POL_REG = (AHB_SECURE_CTRL->MASTER_SEC_ANTI_POL_REG & 0x03FFFFFFFU) | 0x080000000U;
-	AHB_SECURE_CTRL->CM33_LOCK_REG = 0x800002AAU;
-	AHB_SECURE_CTRL->MCM33_LOCK_REG = 0x8000000AU;
+	AHB_SECURE_CTRL->CPU0_LOCK_REG = 0x800002AAU;
+	AHB_SECURE_CTRL->CPU1_LOCK_REG = 0x8000000AU;
 	AHB_SECURE_CTRL->MISC_CTRL_REG = (AHB_SECURE_CTRL->MISC_CTRL_REG & 0x0FFFF0003U) | 0x00000AAA8U;
 	AHB_SECURE_CTRL->MISC_CTRL_DP_REG = 0x0000AAAAU;
 }

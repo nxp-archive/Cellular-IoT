@@ -7,11 +7,11 @@
 /*
  * TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
 !!GlobalInfo
-product: Pins v6.0
+product: Pins v7.0
 processor: LPC55S69
 package_id: LPC55S69JBD100
 mcu_data: ksdk2_0
-processor_version: 6.0.1
+processor_version: 7.0.1
 pin_labels:
 - {pin_num: '10', pin_signal: PIO1_9/FC1_SCK/CT_INP4/SCT0_OUT2/FC4_CTS_SDA_SSEL0/ADC0_12, label: IQR}
 - {pin_num: '14', pin_signal: PIO0_16/FC4_TXD_SCL_MISO_WS/CLKOUT/CT_INP4/SECURE_GPIO0_16/ADC0_8, label: KFETON, identifier: KFETON_ID}
@@ -21,6 +21,8 @@ pin_labels:
 - {pin_num: '3', pin_signal: PIO1_24/FC2_RXD_SDA_MOSI_DATA/SCT0_OUT1/SD1_D1/FC3_SSEL3/PLU_OUT6, label: USART2 RX}
 - {pin_num: '68', pin_signal: PIO1_26/FC2_CTS_SDA_SSEL0/SCT0_OUT3/CT_INP3/UTICK_CAP1/HS_SPI_SSEL3/PLU_IN5, label: USART2 CTS}
 - {pin_num: '85', pin_signal: PIO1_27/FC2_RTS_SCL_SSEL1/SD0_D4/CTIMER0_MAT3/CLKOUT/PLU_IN4, label: USART2 RTS}
+- {pin_num: '56', pin_signal: PIO0_18/FC4_CTS_SDA_SSEL0/SD0_WR_PRT/CTIMER1_MAT0/SCT0_OUT1/PLU_IN3/SECURE_GPIO0_18/ACMP0_C, label: SKY_nRESET}
+- {pin_num: '40', pin_signal: PIO1_10/FC1_RXD_SDA_MOSI_DATA/CTIMER1_MAT0/SCT0_OUT3, label: SKY_RING}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -272,27 +274,49 @@ void BOARD_InitGT202Shield(void)
                                         IOCON_PIO_DIGITAL_EN |
                                         /* Open drain is disabled */
                                         IOCON_PIO_OPENDRAIN_DI |
-                                        /* Analog switch is disabled */
-                                        IOCON_PIO_ASW_DIS_DI);
+                                        /* Analog switch is open (disabled) */
+                                        IOCON_PIO_ASW_DI);
     /* PORT1 PIN8 (coords: 24) is configured as PIO1_8 */
     IOCON_PinMuxSet(IOCON, 1U, 8U, port1_pin8_config);
 
-    const uint32_t port1_pin9_config = (/* Pin is configured as PIO1_9 */
-                                        IOCON_PIO_FUNC0 |
-                                        /* Selects pull-up function */
-                                        IOCON_PIO_MODE_PULLUP |
-                                        /* Standard mode, output slew rate control is enabled */
-                                        IOCON_PIO_SLEW_STANDARD |
-                                        /* Input function is not inverted */
-                                        IOCON_PIO_INV_DI |
-                                        /* Enables digital function */
-                                        IOCON_PIO_DIGITAL_EN |
-                                        /* Open drain is disabled */
-                                        IOCON_PIO_OPENDRAIN_DI |
-                                        /* Analog switch is disabled */
-                                        IOCON_PIO_ASW_DI);
-    /* PORT1 PIN9 (coords: 10) is configured as PIO1_9 */
-    IOCON_PinMuxSet(IOCON, 1U, 9U, port1_pin9_config);
+    if (Chip_GetVersion()==1)
+    {
+        const uint32_t port1_pin9_config = (/* Pin is configured as PIO1_9 */
+                                            IOCON_PIO_FUNC0 |
+                                            /* Selects pull-up function */
+                                            IOCON_PIO_MODE_PULLUP |
+                                            /* Standard mode, output slew rate control is enabled */
+                                            IOCON_PIO_SLEW_STANDARD |
+                                            /* Input function is not inverted */
+                                            IOCON_PIO_INV_DI |
+                                            /* Enables digital function */
+                                            IOCON_PIO_DIGITAL_EN |
+                                            /* Open drain is disabled */
+                                            IOCON_PIO_OPENDRAIN_DI |
+                                            /* Analog switch is open (disabled) */
+                                            IOCON_PIO_ASW_DI);
+        /* PORT1 PIN9 (coords: 10) is configured as PIO1_9 */
+        IOCON_PinMuxSet(IOCON, 1U, 9U, port1_pin9_config);
+    }
+    else
+    {
+        const uint32_t port1_pin9_config = (/* Pin is configured as PIO1_9 */
+                                            IOCON_PIO_FUNC0 |
+                                            /* Selects pull-up function */
+                                            IOCON_PIO_MODE_PULLUP |
+                                            /* Standard mode, output slew rate control is enabled */
+                                            IOCON_PIO_SLEW_STANDARD |
+                                            /* Input function is not inverted */
+                                            IOCON_PIO_INV_DI |
+                                            /* Enables digital function */
+                                            IOCON_PIO_DIGITAL_EN |
+                                            /* Open drain is disabled */
+                                            IOCON_PIO_OPENDRAIN_DI |
+                                            /* Analog switch is open (disabled), only for A0 version */
+                                            IOCON_PIO_ASW_DIS_DI);
+        /* PORT1 PIN9 (coords: 10) is configured as PIO1_9 */
+        IOCON_PinMuxSet(IOCON, 1U, 9U, port1_pin9_config);
+    }
 }
 
 /* clang-format off */
@@ -373,7 +397,7 @@ void BOARD_InitSilex2401Shield(void)
          | IOCON_PIO_MODE(PIO0_16_MODE_PULL_DOWN)
 
          /* Driver slew rate.
-          * : Standard mode, output slew rate control is enabled.
+          * : Standard-mode, output slew rate is slower.
           * More outputs can be switched simultaneously. */
          | IOCON_PIO_SLEW(PIO0_16_SLEW_STANDARD)
 
@@ -383,7 +407,8 @@ void BOARD_InitSilex2401Shield(void)
          | IOCON_PIO_INVERT(PIO0_16_INVERT_DISABLED)
 
          /* Select Digital mode.
-          * : Digital mode, digital input is enabled. */
+          * : Enable Digital mode.
+          * Digital input is enabled. */
          | IOCON_PIO_DIGIMODE(PIO0_16_DIGIMODE_DIGITAL)
 
          /* Controls open-drain mode.
@@ -492,6 +517,8 @@ BOARD_InitSequansSkywireShield:
   - {pin_num: '3', peripheral: FLEXCOMM2, signal: RXD_SDA_MOSI_DATA, pin_signal: PIO1_24/FC2_RXD_SDA_MOSI_DATA/SCT0_OUT1/SD1_D1/FC3_SSEL3/PLU_OUT6}
   - {pin_num: '68', peripheral: FLEXCOMM2, signal: CTS_SDA_SSEL0, pin_signal: PIO1_26/FC2_CTS_SDA_SSEL0/SCT0_OUT3/CT_INP3/UTICK_CAP1/HS_SPI_SSEL3/PLU_IN5}
   - {pin_num: '85', peripheral: FLEXCOMM2, signal: RTS_SCL_SSEL1, pin_signal: PIO1_27/FC2_RTS_SCL_SSEL1/SD0_D4/CTIMER0_MAT3/CLKOUT/PLU_IN4}
+  - {pin_num: '56', peripheral: GPIO, signal: 'PIO0, 18', pin_signal: PIO0_18/FC4_CTS_SDA_SSEL0/SD0_WR_PRT/CTIMER1_MAT0/SCT0_OUT1/PLU_IN3/SECURE_GPIO0_18/ACMP0_C}
+  - {pin_num: '40', peripheral: GPIO, signal: 'PIO1, 10', pin_signal: PIO1_10/FC1_RXD_SDA_MOSI_DATA/CTIMER1_MAT0/SCT0_OUT3}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -508,6 +535,37 @@ void BOARD_InitSequansSkywireShield(void)
     /* Enables the clock for the I/O controller.: Enable Clock. */
     CLOCK_EnableClock(kCLOCK_Iocon);
 
+    if (Chip_GetVersion()==1)
+    {
+        IOCON->PIO[0][18] = ((IOCON->PIO[0][18] &
+                          /* Mask bits to zero which are setting */
+                          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
+
+                         /* Selects pin function.
+                          * : PORT018 (pin 56) is configured as PIO0_18. */
+                         | IOCON_PIO_FUNC(PIO0_18_FUNC_ALT0)
+
+                         /* Select Digital mode.
+                          * : Enable Digital mode.
+                          * Digital input is enabled. */
+                         | IOCON_PIO_DIGIMODE(PIO0_18_DIGIMODE_DIGITAL));
+    }
+    else
+    {
+        IOCON->PIO[0][18] = ((IOCON->PIO[0][18] &
+                          /* Mask bits to zero which are setting */
+                          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
+
+                         /* Selects pin function.
+                          * : PORT018 (pin 56) is configured as PIO0_18. */
+                         | IOCON_PIO_FUNC(PIO0_18_FUNC_ALT0)
+
+                         /* Select Digital mode.
+                          * : Enable Digital mode.
+                          * Digital input is enabled. */
+                         | IOCON_PIO_DIGIMODE(PIO0_18_DIGIMODE_DIGITAL));
+    }
+
     IOCON->PIO[0][27] = ((IOCON->PIO[0][27] &
                           /* Mask bits to zero which are setting */
                           (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
@@ -517,8 +575,22 @@ void BOARD_InitSequansSkywireShield(void)
                          | IOCON_PIO_FUNC(PIO0_27_FUNC_ALT1)
 
                          /* Select Digital mode.
-                          * : Digital mode, digital input is enabled. */
+                          * : Enable Digital mode.
+                          * Digital input is enabled. */
                          | IOCON_PIO_DIGIMODE(PIO0_27_DIGIMODE_DIGITAL));
+
+    IOCON->PIO[1][10] = ((IOCON->PIO[1][10] &
+                          /* Mask bits to zero which are setting */
+                          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
+
+                         /* Selects pin function.
+                          * : PORT110 (pin 40) is configured as PIO1_10. */
+                         | IOCON_PIO_FUNC(PIO1_10_FUNC_ALT0)
+
+                         /* Select Digital mode.
+                          * : Enable Digital mode.
+                          * Digital input is enabled. */
+                         | IOCON_PIO_DIGIMODE(PIO1_10_DIGIMODE_DIGITAL));
 
     IOCON->PIO[1][24] = ((IOCON->PIO[1][24] &
                           /* Mask bits to zero which are setting */
@@ -529,19 +601,21 @@ void BOARD_InitSequansSkywireShield(void)
                          | IOCON_PIO_FUNC(PIO1_24_FUNC_ALT1)
 
                          /* Select Digital mode.
-                          * : Digital mode, digital input is enabled. */
+                          * : Enable Digital mode.
+                          * Digital input is enabled. */
                          | IOCON_PIO_DIGIMODE(PIO1_24_DIGIMODE_DIGITAL));
 
     IOCON->PIO[1][26] = ((IOCON->PIO[1][26] &
                           /* Mask bits to zero which are setting */
-                          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK | IOCON_PIO_FUNC(1))))
+                          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
 
                          /* Selects pin function.
                           * : PORT126 (pin 68) is configured as FC2_CTS_SDA_SSEL0. */
                          | IOCON_PIO_FUNC(PIO1_26_FUNC_ALT1)
 
                          /* Select Digital mode.
-                          * : Digital mode, digital input is enabled. */
+                          * : Enable Digital mode.
+                          * Digital input is enabled. */
                          | IOCON_PIO_DIGIMODE(PIO1_26_DIGIMODE_DIGITAL));
 
     IOCON->PIO[1][27] = ((IOCON->PIO[1][27] &
@@ -553,9 +627,9 @@ void BOARD_InitSequansSkywireShield(void)
                          | IOCON_PIO_FUNC(PIO1_27_FUNC_ALT1)
 
                          /* Select Digital mode.
-                          * : Digital mode, digital input is enabled. */
+                          * : Enable Digital mode.
+                          * Digital input is enabled. */
                          | IOCON_PIO_DIGIMODE(PIO1_27_DIGIMODE_DIGITAL));
-
 }
 /***********************************************************************************************************************
  * EOF

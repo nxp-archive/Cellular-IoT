@@ -40,8 +40,8 @@ void BOARD_InitBootPins(void);
  */
 void BOARD_InitPins(void); /* Function assigned for the Cortex-M33 (Core #0) */
 
-#define IOCON_PIO_ASW_DI 0x0400u      /*!<@brief Analog switch is disabled */
-#define IOCON_PIO_ASW_DIS_DI 0x00u    /*!<@brief Analog switch is disabled */
+#define IOCON_PIO_ASW_DI 0x00u        /*!<@brief Analog switch is open (disabled) */
+#define IOCON_PIO_ASW_DIS_DI 0x0400u  /*!<@brief Analog switch is open (disabled), only for A0 version */
 #define IOCON_PIO_DIGITAL_EN 0x0100u  /*!<@brief Enables digital function */
 #define IOCON_PIO_FUNC0 0x00u         /*!<@brief Selects pin function 0 */
 #define IOCON_PIO_FUNC5 0x05u         /*!<@brief Selects pin function 5 */
@@ -98,7 +98,7 @@ void BOARD_InitGT202Shield(void); /* Function assigned for the Cortex-M33 (Core 
  * @brief Standard mode, output slew rate control is enabled */
 #define IOCON_PIO_SLEW_STANDARD 0x00u
 /*!
- * @brief Select Digital mode.: Digital mode, digital input is enabled. */
+ * @brief Select Digital mode.: Enable Digital mode. Digital input is enabled. */
 #define PIO0_16_DIGIMODE_DIGITAL 0x01u
 /*!
  * @brief Selects pin function.: Alternative connection 0. */
@@ -119,7 +119,7 @@ void BOARD_InitGT202Shield(void); /* Function assigned for the Cortex-M33 (Core 
 /*!
  * @brief
  * Driver slew rate.
- * : Standard mode, output slew rate control is enabled.
+ * : Standard-mode, output slew rate is slower.
  * More outputs can be switched simultaneously.
  */
 #define PIO0_16_SLEW_STANDARD 0x00u
@@ -151,14 +151,42 @@ void BOARD_InitGT202Shield(void); /* Function assigned for the Cortex-M33 (Core 
  */
 void BOARD_InitSilex2401Shield(void); /* Function assigned for the Cortex-M33 (Core #0) */
 
-#define PIO0_27_DIGIMODE_DIGITAL 0x01u /*!<@brief Select Digital mode.: Digital mode, digital input is enabled. */
-#define PIO0_27_FUNC_ALT1 0x01u        /*!<@brief Selects pin function.: Alternative connection 1. */
-#define PIO1_24_DIGIMODE_DIGITAL 0x01u /*!<@brief Select Digital mode.: Digital mode, digital input is enabled. */
-#define PIO1_24_FUNC_ALT1 0x01u        /*!<@brief Selects pin function.: Alternative connection 1. */
-#define PIO1_26_DIGIMODE_DIGITAL 0x01u /*!<@brief Select Digital mode.: Digital mode, digital input is enabled. */
-#define PIO1_26_FUNC_ALT1 0x01u        /*!<@brief Selects pin function.: Alternative connection 1. */
-#define PIO1_27_DIGIMODE_DIGITAL 0x01u /*!<@brief Select Digital mode.: Digital mode, digital input is enabled. */
-#define PIO1_27_FUNC_ALT1 0x01u        /*!<@brief Selects pin function.: Alternative connection 1. */
+/*!
+ * @brief Select Digital mode.: Enable Digital mode. Digital input is enabled. */
+#define PIO0_18_DIGIMODE_DIGITAL 0x01u
+/*!
+ * @brief Selects pin function.: Alternative connection 0. */
+#define PIO0_18_FUNC_ALT0 0x00u
+/*!
+ * @brief Select Digital mode.: Enable Digital mode. Digital input is enabled. */
+#define PIO0_27_DIGIMODE_DIGITAL 0x01u
+/*!
+ * @brief Selects pin function.: Alternative connection 1. */
+#define PIO0_27_FUNC_ALT1 0x01u
+/*!
+ * @brief Select Digital mode.: Enable Digital mode. Digital input is enabled. */
+#define PIO1_10_DIGIMODE_DIGITAL 0x01u
+/*!
+ * @brief Selects pin function.: Alternative connection 0. */
+#define PIO1_10_FUNC_ALT0 0x00u
+/*!
+ * @brief Select Digital mode.: Enable Digital mode. Digital input is enabled. */
+#define PIO1_24_DIGIMODE_DIGITAL 0x01u
+/*!
+ * @brief Selects pin function.: Alternative connection 1. */
+#define PIO1_24_FUNC_ALT1 0x01u
+/*!
+ * @brief Select Digital mode.: Enable Digital mode. Digital input is enabled. */
+#define PIO1_26_DIGIMODE_DIGITAL 0x01u
+/*!
+ * @brief Selects pin function.: Alternative connection 1. */
+#define PIO1_26_FUNC_ALT1 0x01u
+/*!
+ * @brief Select Digital mode.: Enable Digital mode. Digital input is enabled. */
+#define PIO1_27_DIGIMODE_DIGITAL 0x01u
+/*!
+ * @brief Selects pin function.: Alternative connection 1. */
+#define PIO1_27_FUNC_ALT1 0x01u
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.

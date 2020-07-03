@@ -445,44 +445,48 @@ gsmi_receive_raw(const char* str , uint8_t connid , uint32_t rx_size )
 	{
 		unsigned char lc_st;
 
+		sRXData[connid - 1][u8_nextFreeBufferPool].connid = connid;
+		sRXData[connid - 1][u8_nextFreeBufferPool].BytesPending = rx_size;
+
 		/* Convert the ASCII data to Integer data */
 		for( uint32_t i = 0  ; i < rx_size ; i++ )
 		{
 			lc_st = *str;
 			if( ( '0' <= lc_st ) && ( lc_st <= '9' ) )
 			{
-				*sRXData[connid - 1][prev_rxCircularBufferPos].ptr_end = lc_st - 0x30;
+				*sRXData[connid - 1][u8_nextFreeBufferPool].ptr_end = lc_st - 0x30;
 			}
 			else
 			{
-				*sRXData[connid - 1][prev_rxCircularBufferPos].ptr_end = lc_st - 0x37;
+				*sRXData[connid - 1][u8_nextFreeBufferPool].ptr_end = lc_st - 0x37;
 			}
 
-			*sRXData[connid - 1][prev_rxCircularBufferPos].ptr_end  <<= 4;
-			*sRXData[connid - 1][prev_rxCircularBufferPos].ptr_end &= 0xF0;
+			*sRXData[connid - 1][u8_nextFreeBufferPool].ptr_end  <<= 4;
+			*sRXData[connid - 1][u8_nextFreeBufferPool].ptr_end &= 0xF0;
 			str++;
 
 			lc_st = *str;
 			if( ( '0' <= lc_st ) && ( lc_st <= '9' ) )
 			{
-				*sRXData[connid - 1][prev_rxCircularBufferPos].ptr_end += ( (lc_st - 0x30) & 0x0F );
+				*sRXData[connid - 1][u8_nextFreeBufferPool].ptr_end += ( (lc_st - 0x30) & 0x0F );
 			}
 			else
 			{
-				*sRXData[connid - 1][prev_rxCircularBufferPos].ptr_end += ( (lc_st - 0x37) & 0x0F );
+				*sRXData[connid - 1][u8_nextFreeBufferPool].ptr_end += ( (lc_st - 0x37) & 0x0F );
 			}
 			str++;
 
-			if( sRXData[connid - 1][prev_rxCircularBufferPos].ptr_end == &sRXData[connid - 1][prev_rxCircularBufferPos].RxBuffer[1799] )
+			if( sRXData[connid - 1][u8_nextFreeBufferPool].ptr_end == &sRXData[connid - 1][u8_nextFreeBufferPool].RxBuffer[CELLULAR_BUFFER_SIZE - 1] )
 			{
-				sRXData[connid - 1][prev_rxCircularBufferPos].ptr_end  = &sRXData[connid - 1][prev_rxCircularBufferPos].RxBuffer[0];
+				sRXData[connid - 1][u8_nextFreeBufferPool].ptr_end  = &sRXData[connid - 1][u8_nextFreeBufferPool].RxBuffer[0];
 			}
 			else
 			{
-				sRXData[connid - 1][prev_rxCircularBufferPos].ptr_end++;
+				sRXData[connid - 1][u8_nextFreeBufferPool].ptr_end++;
 			}
-			//sRXData[connid - 1].BytesPending++;
+
 		}
+		u8_nextFreeBufferPool == BUFFER_POLLS_NB - 1 ? u8_nextFreeBufferPool = 0 : u8_nextFreeBufferPool++;
     }
 }   
 
@@ -961,8 +965,6 @@ gsmi_parse_received(gsm_recv_t* rcv) {
 			if(gsmi_parse_rcvdata_update(rcv->data))
 			{
 				rxDataStage = SQNSRING_RECEIVED;
-				rcv_ring++;
-				pendingRead++;
 			}
 			else
 			{
@@ -1301,7 +1303,7 @@ gsmi_parse_received(gsm_recv_t* rcv) {
 				if( !strncmp(rcv->data, "OK" CRLF , 2+CRLF_LEN ))
 				{
 
-					gsm.msg->msg.rx_data.pptrRx = (unsigned char*)sRXData[gsm.msg->msg.rx_data.connId - 1][prev_rxCircularBufferPos].RxBuffer;
+					gsm.msg->msg.rx_data.pptrRx = (unsigned char*)sRXData[gsm.msg->msg.rx_data.connId - 1][u8_nextBufferPoolForData].RxBuffer;
 					is_ok = 1;
 				}
 				else
@@ -2750,6 +2752,13 @@ gsmi_initiate_cmd(gsm_msg_t* msg) {
 		case GSM_CMD_SQNCTM_INFO: {
 			AT_PORT_SEND_BEGIN_AT();
 			AT_PORT_SEND_CONST_STR("+SQNCTM?");
+			AT_PORT_SEND_END_AT();
+			break;
+		}
+		case GSM_CMD_SQNCTM_SET: {
+			AT_PORT_SEND_BEGIN_AT();
+			AT_PORT_SEND_CONST_STR("+SQNCTM=");
+			gsmi_send_string(msg->msg.set_conformance_test.ctm, 1, 1, 0);
 			AT_PORT_SEND_END_AT();
 			break;
 		}
