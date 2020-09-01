@@ -2124,7 +2124,7 @@ gsmi_initiate_cmd(gsm_msg_t* msg) {
         }
         case GSM_CMD_CMEE_SET: {                /* Enable detailed error messages */
             AT_PORT_SEND_BEGIN_AT();
-            AT_PORT_SEND_CONST_STR("+CMEE=1");
+            AT_PORT_SEND_CONST_STR("+CMEE=2");
             AT_PORT_SEND_END_AT();
             break;
         }

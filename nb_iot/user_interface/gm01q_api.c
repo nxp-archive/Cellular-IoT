@@ -164,12 +164,17 @@ uint8_t u8_nxtFreeRngindex= 0;					/*!< Variable to hold the next free +SNQSRING
 
 int32_t SOCKETS_SetCfgExt(void)
 {
-	return gm01q_api_setSocketCfgExt(gsm.m.conn_val_id + 1, 1/*2*/, 1, 0, 1, 1, NULL, NULL, 1);
+	return gm01q_api_setSocketCfgExt(gsm.m.conn_val_id + 1, 1, 1, 0, 1, 1, NULL, NULL, 1);
 }
 
 int32_t SOCKETS_SetCfg(void)
 {
+#ifdef USE_TRUPHONE
 	return gm01q_api_setSocketCfg(gsm.m.conn_val_id + 1, 1, 1450, 0, 600, 50, 1);
+#else
+	/* PDP=3 is used for Verizon network! */
+	return gm01q_api_setSocketCfg(gsm.m.conn_val_id + 1, 3, 1450, 0, 600, 50, 1);
+#endif
 }
 
 int32_t SOCKETS_SetSockSecurity(void)

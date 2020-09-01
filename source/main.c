@@ -178,9 +178,13 @@ int initNetwork(void)
 
 #ifdef DBG_ON_CELLULAR_MODULE
 	gm01q_api_setLogInModule();
+#ifdef USE_TRUPHONE
 	gm01q_api_setConfTestMode("truphone", NULL, NULL, 1);
+#else
+	gm01q_api_setConfTestMode("verizon", NULL, NULL, 1);
+#endif /* USE_TRUPHONE */
 	gm01q_api_readConfTestMode();
-#endif
+#endif /* DBG_ON_CELLULAR_MODULE */
 
 	return INIT_SUCCESS;
 }

@@ -146,7 +146,11 @@ static const uint8_t REQ_ATSQNCTM[]		= "AT+SQNCTM?\r";
 static const uint8_t urcATSQNCTM[]			= "\r\n+SQNCTM:";
 
 /* Force the modem on band 20 */
+#ifdef USE_TRUPHONE
 static const uint8_t REQ_ATBAND[] 		= "AT!=\"uci:set sqnmm_operator.truphone.bands 20\"\r";
+#else
+static const uint8_t REQ_ATBAND[]       = "AT!=\"uci:set sqnmm_operator.verizon.bands 20\"\r";
+#endif /* USE_TRUPHONE */
 
 /************************************************/
 /*               AWS MQTT Commands              */
