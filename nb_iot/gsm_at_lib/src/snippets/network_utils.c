@@ -23,7 +23,7 @@ network_utils_process_reg_change(gsm_evt_t* evt) {
         case GSM_NETWORK_REG_STATUS_CONNECTED: configPRINTF(("Connected to home network!\r\n")); break;
         case GSM_NETWORK_REG_STATUS_CONNECTED_ROAMING: configPRINTF(("Connected to network and roaming!\r\n")); break;
         case GSM_NETWORK_REG_STATUS_SEARCHING: configPRINTF(("Searching for network!\r\n")); break;
-        case GSM_NETWORK_REG_STATUS_SIM_ERR: configPRINTF(("SIM CARD ERROR!\r\n")); break;
+        case GSM_NETWORK_REG_STATUS_NOT_REGISTERED: configPRINTF(("Not registered to a network (can be a SIM card error)\r\n")); break;
         default: configPRINTF(("Other\r\n"));
     }
 

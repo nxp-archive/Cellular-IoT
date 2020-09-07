@@ -276,13 +276,16 @@ typedef struct {
  * \brief           Network Registration status
  */
 typedef enum {
-    GSM_NETWORK_REG_STATUS_SIM_ERR = 0x00,      /*!< SIM card error */
-    GSM_NETWORK_REG_STATUS_CONNECTED = 0x01,    /*!< Device is connected to network */
-    GSM_NETWORK_REG_STATUS_SEARCHING = 0x02,    /*!< Network search is in progress */
-    GSM_NETWORK_REG_STATUS_DENIED = 0x03,       /*!< Registration denied */
-    GSM_NETWORK_REG_STATUS_CONNECTED_ROAMING = 0x05,/*!< Device is connected and is roaming */
-    GSM_NETWORK_REG_STATUS_CONNECTED_SMS_ONLY = 0x06,   /*!< Device is connected to home network in SMS-only mode */
-    GSM_NETWORK_REG_STATUS_CONNECTED_ROAMING_SMS_ONLY = 0x07/*!< Device is roaming in SMS-only mode */
+    GSM_NETWORK_REG_STATUS_NOT_REGISTERED = 0x00,      			/*!< Not registered to a network (can be a SIM card error) */
+    GSM_NETWORK_REG_STATUS_CONNECTED = 0x01,    				/*!< Device is connected to home network */
+    GSM_NETWORK_REG_STATUS_SEARCHING = 0x02,    				/*!< Network search is in progress */
+    GSM_NETWORK_REG_STATUS_DENIED = 0x03,       				/*!< Registration denied */
+	GSM_NETWORK_REG_STATUS_UNKNOWN = 0x04,       				/*!< unknown (e.g. out of GERAN/UTRAN/E-UTRAN coverage) */
+    GSM_NETWORK_REG_STATUS_CONNECTED_ROAMING = 0x05,			/*!< Device is connected and is roaming */
+    GSM_NETWORK_REG_STATUS_CONNECTED_SMS_ONLY = 0x06,   		/*!< Device is connected to home network in SMS-only mode */
+    GSM_NETWORK_REG_STATUS_CONNECTED_ROAMING_SMS_ONLY = 0x07,	/*!< Device is roaming in SMS-only mode */
+    GSM_NETWORK_REG_STATUS_ATTACHED_FOR_EMERGENCY = 0x08,		/*!< attached for emergency bearer services only */
+    GSM_NETWORK_REG_STATUS_CONNECTED_FOR_CSFB = 0x09			/*!< registered for "CSFB not preferred", home network (not applicable) */
 } gsm_network_reg_status_t;
 
 /**

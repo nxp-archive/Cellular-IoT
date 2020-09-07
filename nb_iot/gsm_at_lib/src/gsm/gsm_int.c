@@ -50,7 +50,7 @@
  * \brief           Receive character structure to handle full line terminated with `\n` character
  */
 typedef struct {
-    char data[5000];                             /*!< Received characters */
+    char data[HANDLE_RECEIVE_BUFFER_SIZE];      /*!< Received characters */
     size_t len;                                 /*!< Length of valid characters */
 } gsm_recv_t;
 
@@ -82,7 +82,7 @@ typedef struct {
 #define AT_PORT_SEND_ESC()                  AT_PORT_SEND_STR("\x1B")
 #endif /* !__DOXYGEN__ */
 
-static gsm_recv_t recv_buff __attribute__ ((section(".data.$SRAM4"))) = {0};
+static gsm_recv_t recv_buff = {0};
 static uint8_t ring_recv = 0;
 static uint32_t bytes_to_read = 0;
 static gsmr_t gsmi_process_sub_cmd(gsm_msg_t* msg, uint8_t* is_ok, uint16_t* is_error);

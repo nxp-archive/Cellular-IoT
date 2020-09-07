@@ -28,9 +28,9 @@
 //usart_handle_t g_uartHandle;
 usart_transfer_t sendXfer;
 usart_transfer_t receiveXfer;
-uint8_t g_rxBuffer[AT_BUFFER_SIZE] __attribute__ ((section(".data.$SRAM4"))) = {0};
-uint8_t g_txBuffer[AT_BUFFER_SIZE] __attribute__ ((section(".data.$SRAM4"))) = {0} ;
-uint8_t g_rxRingBuffer[AT_BUFFER_SIZE] __attribute__ ((section(".data.$SRAM4"))) = {0}; /* RX ring buffer. */
+uint8_t g_rxBuffer[AT_BUFFER_SIZE] = {0};
+uint8_t g_txBuffer[AT_BUFFER_SIZE] = {0} ;
+uint8_t g_rxRingBuffer[AT_BUFFER_SIZE] = {0}; /* RX ring buffer. */
 uint8_t Requested_PeriodicTAU[10];
 uint8_t Requested_ActiveTime[10];
 

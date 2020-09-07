@@ -20,7 +20,7 @@
 volatile bool  gm01q_EchoModeActivated = false;
 
 st_RingList RingList[BUFFER_POLLS_NB*2];
-st_RXData sRXData[GSM_CFG_MAX_CONNS][BUFFER_POLLS_NB] __attribute__ ((section(".data.$SRAMX_16"))) = {
+st_RXData sRXData[GSM_CFG_MAX_CONNS][BUFFER_POLLS_NB] = {
 											{
 												{	.BytesPending = 0,
 													.connid = 0,

@@ -22,6 +22,8 @@
 //#define CELLULAR_BUFFER_SIZE 1500U * 2U
 #define CELLULAR_BUFFER_SIZE 1800U
 
+#define HANDLE_RECEIVE_BUFFER_SIZE	5000U
+
 typedef struct ST_RXDATAPENDING_TAG
 {
 	uint32_t BytesPending;					/*!< Number of Bytes pending to be read by the Application */

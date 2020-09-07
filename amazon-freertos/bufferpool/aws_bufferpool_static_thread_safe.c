@@ -111,7 +111,7 @@ typedef struct BufferMetadata
  * @note Each buffer in the buffer pool allocates additional the space required
  * to store the metadata and to ensure alignment.
  */
-static uint8_t ucBufferPool[ bufferpoolconfigNUM_BUFFERS ][ sizeof( BufferMetadata_t ) + bufferpoolconfigBUFFER_SIZE + ( portBYTE_ALIGNMENT - 1 ) ] __attribute__ ((section(".data.$SRAM4")));;
+static uint8_t ucBufferPool[ bufferpoolconfigNUM_BUFFERS ][ sizeof( BufferMetadata_t ) + bufferpoolconfigBUFFER_SIZE + ( portBYTE_ALIGNMENT - 1 ) ];
 /*-----------------------------------------------------------*/
 
 BaseType_t BUFFERPOOL_Init( void )
