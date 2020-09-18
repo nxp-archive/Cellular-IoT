@@ -510,7 +510,7 @@ void BOARD_InitSilex2401Shield(void)
 /* clang-format off */
 /*
  * TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
-BOARD_InitSequansSkywireShield:
+BOARD_InitMonarchGoArduinoShield:
 - options: {callFromInitBoot: 'false', coreID: cm33_core0, enableClock: 'true'}
 - pin_list:
   - {pin_num: '27', peripheral: FLEXCOMM2, signal: TXD_SCL_MISO_WS, pin_signal: PIO0_27/FC2_TXD_SCL_MISO_WS/CTIMER3_MAT2/SCT0_OUT6/FC7_RXD_SDA_MOSI_DATA/PLU_OUT0/SECURE_GPIO0_27}
@@ -525,12 +525,12 @@ BOARD_InitSequansSkywireShield:
 
 /* FUNCTION ************************************************************************************************************
  *
- * Function Name : BOARD_InitSequansSkywireShield
+ * Function Name : BOARD_InitMonarchGoArduinoShield
  * Description   : Configures pin routing and optionally pin electrical features.
  *
  * END ****************************************************************************************************************/
 /* Function assigned for the Cortex-M33 (Core #0) */
-void BOARD_InitSequansSkywireShield(void)
+void BOARD_InitMonarchGoArduinoShield(void)
 {
     /* Enables the clock for the I/O controller.: Enable Clock. */
     CLOCK_EnableClock(kCLOCK_Iocon);

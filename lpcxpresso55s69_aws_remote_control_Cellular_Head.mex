@@ -17,6 +17,10 @@
    </preferences>
    <tools>
       <pins name="Pins" version="7.0" enabled="true" update_project_code="true">
+         <generated_project_files>
+            <file path="board/pin_mux.c" update_enabled="true"/>
+            <file path="board/pin_mux.h" update_enabled="true"/>
+         </generated_project_files>
          <pins_profile>
             <processor_version>7.0.1</processor_version>
             <pin_labels>
@@ -281,7 +285,7 @@
                   </pin>
                </pins>
             </function>
-            <function name="BOARD_InitSequansSkywireShield">
+            <function name="BOARD_InitMonarchGoArduinoShield">
                <description>Configures pin routing and optionally pin electrical features.</description>
                <options>
                   <callFromInitBoot>false</callFromInitBoot>
@@ -289,12 +293,12 @@
                   <enableClock>true</enableClock>
                </options>
                <dependencies>
-                  <dependency resourceType="Peripheral" resourceId="FLEXCOMM2" description="Peripheral FLEXCOMM2 is not initialized" problem_level="1" source="Pins:BOARD_InitSequansSkywireShield">
+                  <dependency resourceType="Peripheral" resourceId="FLEXCOMM2" description="Peripheral FLEXCOMM2 is not initialized" problem_level="1" source="Pins:BOARD_InitMonarchGoArduinoShield">
                      <feature name="initialized" evaluation="equal">
                         <data>true</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Pins initialization requires the COMMON Driver in the project." problem_level="2" source="Pins:BOARD_InitSequansSkywireShield">
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Pins initialization requires the COMMON Driver in the project." problem_level="2" source="Pins:BOARD_InitMonarchGoArduinoShield">
                      <feature name="enabled" evaluation="equal" configuration="cm33_core1">
                         <data>true</data>
                      </feature>
@@ -312,6 +316,10 @@
          </functions_list>
       </pins>
       <clocks name="Clocks" version="7.0" enabled="true" update_project_code="true">
+         <generated_project_files>
+            <file path="board/clock_config.c" update_enabled="true"/>
+            <file path="board/clock_config.h" update_enabled="true"/>
+         </generated_project_files>
          <clocks_profile>
             <processor_version>7.0.1</processor_version>
          </clocks_profile>
@@ -487,12 +495,17 @@
          </clock_configurations>
       </clocks>
       <dcdx name="DCDx" version="2.0" enabled="false" update_project_code="true">
+         <generated_project_files/>
          <dcdx_profile>
             <processor_version>N/A</processor_version>
          </dcdx_profile>
          <dcdx_configurations/>
       </dcdx>
       <periphs name="Peripherals" version="7.0" enabled="true" update_project_code="true">
+         <generated_project_files>
+            <file path="board/peripherals.c" update_enabled="true"/>
+            <file path="board/peripherals.h" update_enabled="true"/>
+         </generated_project_files>
          <peripherals_profile>
             <processor_version>7.0.1</processor_version>
          </peripherals_profile>
@@ -508,12 +521,16 @@
             <component name="system" uuid="a036ab15-dfa5-4680-a49d-d15b37dab0b3" type_id="system_54b53072540eeeb8f8e9343e71f28176">
                <config_set_global name="global_system_definitions"/>
             </component>
-            <component name="msg" uuid="776a54dd-c4f1-4b09-8530-6d2724c6fa38" type_id="msg_6e2baaf3b97dbeef01c0043275f9a0e7">
+            <component name="msg" uuid="1f5f62ae-f6e9-40ba-9f44-131ce8ebad8a" type_id="msg_6e2baaf3b97dbeef01c0043275f9a0e7">
                <config_set_global name="global_messages"/>
             </component>
          </components>
       </periphs>
       <tee name="TEE" version="1.0" enabled="true" update_project_code="true">
+         <generated_project_files>
+            <file path="trustzone/tzm_config.c" update_enabled="true"/>
+            <file path="trustzone/tzm_config.h" update_enabled="true"/>
+         </generated_project_files>
          <tee_profile>
             <processor_version>7.0.1</processor_version>
          </tee_profile>

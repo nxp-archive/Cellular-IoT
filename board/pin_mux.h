@@ -192,7 +192,7 @@ void BOARD_InitSilex2401Shield(void); /* Function assigned for the Cortex-M33 (C
  * @brief Configures pin routing and optionally pin electrical features.
  *
  */
-void BOARD_InitSequansSkywireShield(void); /* Function assigned for the Cortex-M33 (Core #0) */
+void BOARD_InitMonarchGoArduinoShield(void); /* Function assigned for the Cortex-M33 (Core #0) */
 
 #if defined(__cplusplus)
 }
