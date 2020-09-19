@@ -44,7 +44,7 @@
 #include "atheros_stack_offload.h"
 #include "gsm/gsm_includes.h"
 #include "gsm/gsm_private.h"
-#include "gm01q_api.h"
+#include "CellIoT_tools.h"
 
 
 /**
@@ -139,7 +139,7 @@ static BaseType_t prvNetworkSend( void * pvContext,
 
 #else
     /* Send Data using AT commands */
-    if(  gm01q_api_socketSend( gsm.m.conn_val_id , pucData , xDataLength ) == gsmOK )
+    if(  CellIoT_tools_socketSend( gsm.m.conn_val_id , pucData , xDataLength ) == gsmOK )
     {
     	vTaskDelay(pdMS_TO_TICKS(200));
     	return xDataLength;
@@ -232,14 +232,14 @@ static BaseType_t prvNetworkRecv( void * pvContext,
 //    do
 //    {
 //    	vTaskDelay(pdMS_TO_TICKS(1));
-//    	xRetVal = gm01q_api_socketReadData( gsm.m.conn_val_id, pucReceiveBuffer , xReceiveLength );
+//    	xRetVal = CellIoT_tools_socketReadData( gsm.m.conn_val_id, pucReceiveBuffer , xReceiveLength );
 //    	if( xRetVal > 0 )
 //    		break;
 //    }while( ++i < 500 );
     uint32_t i = 0;
     do
     {
-    	xRetVal = gm01q_api_socketReadData( gsm.m.conn_val_id, pucReceiveBuffer , xReceiveLength );
+    	xRetVal = CellIoT_tools_socketReadData( gsm.m.conn_val_id, pucReceiveBuffer , xReceiveLength );
     	if( 0 == xRetVal )
     		vTaskDelay(pdMS_TO_TICKS(1));
     }while( 0 == xRetVal && ++i < 500);
@@ -292,7 +292,7 @@ int32_t SOCKETS_Close( Socket_t xSocket )
         qcom_socket_close( ( int ) pxContext->xSocket );
 #else
         // Close socket AT
-        gm01q_api_socketClose( gsm.m.conn_val_id  );
+        CellIoT_tools_socketClose( gsm.m.conn_val_id  );
 #endif
 
         vPortFree( pxContext );
@@ -365,7 +365,7 @@ int32_t SOCKETS_Connect( Socket_t xSocket,
 		strcat(ip_string,".");
 		strcat(ip_string,temp_3);
 
-        xStatus = gm01q_api_socketDial(gsm.m.conn_val_id + 1, 0, pxAddress->usPort, ip_string, 0, 0, 1, 0, NULL, NULL, 1);
+        xStatus = CellIoT_tools_socketDial(gsm.m.conn_val_id + 1, 0, pxAddress->usPort, ip_string, 0, 0, 1, 0, NULL, NULL, 1);
 #endif
 
 
@@ -430,7 +430,7 @@ uint32_t SOCKETS_GetHostByName( const char * pcHostName )
         /*{*/
 			gsm_ip_t* ip = &gsm.m.conns[gsm.m.conn_val_id].remote_ip;
 			//gsm_core_lock();
-			gm01q_api_getHostIP(( char * ) pcHostName, NULL, NULL, 1);
+			CellIoT_tools_getHostIP(( char * ) pcHostName, NULL, NULL, 1);
 			//gsm_core_unlock();
 			ulAddr = ( ( ( ip->ip[0] ) << 24 ) & 0xFF000000 ) +
 					 ( ( ( ip->ip[1] ) << 16 ) & 0x00FF0000 ) +

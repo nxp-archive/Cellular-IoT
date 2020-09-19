@@ -49,7 +49,7 @@
 /* Secure sockets include. */
 #include "aws_secure_sockets.h"
 
-#include "gm01q_api.h"
+#include "CellIoT_tools.h"
 
 /* Standard includes. */
 #include <string.h>

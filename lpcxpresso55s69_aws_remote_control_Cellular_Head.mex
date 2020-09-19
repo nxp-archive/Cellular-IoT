@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding= "UTF-8" ?>
-<configuration name="LPC55S69" version="1.7" xsi:schemaLocation="http://mcuxpresso.nxp.com/XSD/mex_configuration_1.7 http://mcuxpresso.nxp.com/XSD/mex_configuration_1.7.xsd" uuid="2aeb7030-6c1a-4e04-8b33-cdec8c9fbd94" xmlns="http://mcuxpresso.nxp.com/XSD/mex_configuration_1.7" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<configuration name="LPC55S69" xsi:schemaLocation="http://mcuxpresso.nxp.com/XSD/mex_configuration_1.8 http://mcuxpresso.nxp.com/XSD/mex_configuration_1.8.xsd" uuid="2aeb7030-6c1a-4e04-8b33-cdec8c9fbd94" version="1.8" xmlns="http://mcuxpresso.nxp.com/XSD/mex_configuration_1.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <common>
       <processor>LPC55S69</processor>
       <package>LPC55S69JBD100</package>
@@ -16,13 +16,13 @@
       <generate_code_modified_registers_only>false</generate_code_modified_registers_only>
    </preferences>
    <tools>
-      <pins name="Pins" version="7.0" enabled="true" update_project_code="true">
+      <pins name="Pins" version="8.0" enabled="true" update_project_code="true">
          <generated_project_files>
             <file path="board/pin_mux.c" update_enabled="true"/>
             <file path="board/pin_mux.h" update_enabled="true"/>
          </generated_project_files>
          <pins_profile>
-            <processor_version>7.0.1</processor_version>
+            <processor_version>8.0.0</processor_version>
             <pin_labels>
                <pin_label pin_num="10" pin_signal="PIO1_9/FC1_SCK/CT_INP4/SCT0_OUT2/FC4_CTS_SDA_SSEL0/ADC0_12" label="IQR"/>
                <pin_label pin_num="14" pin_signal="PIO0_16/FC4_TXD_SCL_MISO_WS/CLKOUT/CT_INP4/SECURE_GPIO0_16/ADC0_8" label="KFETON" identifier="KFETON_ID"/>
@@ -321,7 +321,7 @@
             <file path="board/clock_config.h" update_enabled="true"/>
          </generated_project_files>
          <clocks_profile>
-            <processor_version>7.0.1</processor_version>
+            <processor_version>8.0.0</processor_version>
          </clocks_profile>
          <clock_configurations>
             <clock_configuration name="BOARD_BootClockFRO12M">
@@ -501,13 +501,13 @@
          </dcdx_profile>
          <dcdx_configurations/>
       </dcdx>
-      <periphs name="Peripherals" version="7.0" enabled="true" update_project_code="true">
+      <periphs name="Peripherals" version="8.0" enabled="true" update_project_code="true">
          <generated_project_files>
             <file path="board/peripherals.c" update_enabled="true"/>
             <file path="board/peripherals.h" update_enabled="true"/>
          </generated_project_files>
          <peripherals_profile>
-            <processor_version>7.0.1</processor_version>
+            <processor_version>8.0.0</processor_version>
          </peripherals_profile>
          <functional_groups>
             <functional_group name="BOARD_InitPeripherals" uuid="079a775e-075c-4666-9e9d-a6f53cced094" called_from_default_init="true" id_prefix="" core="cm33_core0">
@@ -519,20 +519,29 @@
          </functional_groups>
          <components>
             <component name="system" uuid="a036ab15-dfa5-4680-a49d-d15b37dab0b3" type_id="system_54b53072540eeeb8f8e9343e71f28176">
-               <config_set_global name="global_system_definitions"/>
+               <config_set_global name="global_system_definitions">
+                  <setting name="user_definitions" value=""/>
+                  <setting name="user_includes" value=""/>
+               </config_set_global>
             </component>
             <component name="msg" uuid="1f5f62ae-f6e9-40ba-9f44-131ce8ebad8a" type_id="msg_6e2baaf3b97dbeef01c0043275f9a0e7">
                <config_set_global name="global_messages"/>
             </component>
+            <component name="generic_uart" uuid="00db91fe-c397-4bde-b114-ea5172742af0" type_id="generic_uart_8cae00565451cf2346eb1b8c624e73a6">
+               <config_set_global name="global_uart"/>
+            </component>
+            <component name="generic_can" uuid="ece18473-ff25-4cce-af2f-1766f8d64407" type_id="generic_can_1bfdd78b1af214566c1f23cf6a582d80">
+               <config_set_global name="global_can"/>
+            </component>
          </components>
       </periphs>
-      <tee name="TEE" version="1.0" enabled="true" update_project_code="true">
+      <tee name="TEE" version="2.0" enabled="true" update_project_code="true">
          <generated_project_files>
             <file path="trustzone/tzm_config.c" update_enabled="true"/>
             <file path="trustzone/tzm_config.h" update_enabled="true"/>
          </generated_project_files>
          <tee_profile>
-            <processor_version>7.0.1</processor_version>
+            <processor_version>8.0.0</processor_version>
          </tee_profile>
          <ahb>
             <relative_region start="0" size="655360" security="ns_user" memory="PROGRAM_FLASH"/>
@@ -788,14 +797,14 @@
             </pins_masks>
          </ahb>
          <sau enabled="false" all_non_secure="false" generate_code_for_disabled_regions="false">
-            <region start="0" size="32" security="ns" index="0" enabled="false"/>
-            <region start="0" size="32" security="ns" index="1" enabled="false"/>
-            <region start="0" size="32" security="ns" index="2" enabled="false"/>
-            <region start="0" size="32" security="ns" index="3" enabled="false"/>
-            <region start="0" size="32" security="ns" index="4" enabled="false"/>
-            <region start="0" size="32" security="ns" index="5" enabled="false"/>
-            <region start="0" size="32" security="ns" index="6" enabled="false"/>
-            <region start="0" size="32" security="ns" index="7" enabled="false"/>
+            <region start="0" size="32" security="ns" enabled="false" index="0"/>
+            <region start="0" size="32" security="ns" enabled="false" index="1"/>
+            <region start="0" size="32" security="ns" enabled="false" index="2"/>
+            <region start="0" size="32" security="ns" enabled="false" index="3"/>
+            <region start="0" size="32" security="ns" enabled="false" index="4"/>
+            <region start="0" size="32" security="ns" enabled="false" index="5"/>
+            <region start="0" size="32" security="ns" enabled="false" index="6"/>
+            <region start="0" size="32" security="ns" enabled="false" index="7"/>
          </sau>
          <global_options>
             <option id="AIRCR_PRIS" value="no"/>
@@ -855,8 +864,55 @@
             <option id="AHB_MISC_CTRL_REG_DISABLE_SMART_MASTER_STRICT_MODE" value="no"/>
             <option id="AHB_MISC_CTRL_REG_IDAU_ALL_NS" value="no"/>
             <option id="AHB_MISC_CTRL_REG_WRITE_LOCK" value="no"/>
+            <option id="_output_type_" value="c_code"/>
          </global_options>
          <user_memory_regions/>
+         <mpus>
+            <mpu enabled="false" priv_default_map="false" handler_enabled="false" id="s" generate_code_for_disabled_regions="false">
+               <attributes>
+                  <group index="0" id="0" memory_type="device" device="nGnRE"/>
+                  <group index="1" id="1" memory_type="device" device="nGnRE"/>
+                  <group index="2" id="2" memory_type="device" device="nGnRE"/>
+                  <group index="3" id="3" memory_type="device" device="nGnRE"/>
+                  <group index="4" id="4" memory_type="device" device="nGnRE"/>
+                  <group index="5" id="5" memory_type="device" device="nGnRE"/>
+                  <group index="6" id="6" memory_type="device" device="nGnRE"/>
+                  <group index="7" id="7" memory_type="device" device="nGnRE"/>
+               </attributes>
+               <regions>
+                  <region start="0" size="32" security="priv" enabled="false" index="0" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="1" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="2" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="3" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="4" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="5" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="6" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="7" executable="false" read_only="false" attributes_index="0"/>
+               </regions>
+            </mpu>
+            <mpu enabled="false" priv_default_map="false" handler_enabled="false" id="ns" generate_code_for_disabled_regions="false">
+               <attributes>
+                  <group index="0" id="0" memory_type="device" device="nGnRE"/>
+                  <group index="1" id="1" memory_type="device" device="nGnRE"/>
+                  <group index="2" id="2" memory_type="device" device="nGnRE"/>
+                  <group index="3" id="3" memory_type="device" device="nGnRE"/>
+                  <group index="4" id="4" memory_type="device" device="nGnRE"/>
+                  <group index="5" id="5" memory_type="device" device="nGnRE"/>
+                  <group index="6" id="6" memory_type="device" device="nGnRE"/>
+                  <group index="7" id="7" memory_type="device" device="nGnRE"/>
+               </attributes>
+               <regions>
+                  <region start="0" size="32" security="priv" enabled="false" index="0" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="1" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="2" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="3" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="4" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="5" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="6" executable="false" read_only="false" attributes_index="0"/>
+                  <region start="0" size="32" security="priv" enabled="false" index="7" executable="false" read_only="false" attributes_index="0"/>
+               </regions>
+            </mpu>
+         </mpus>
       </tee>
    </tools>
 </configuration>

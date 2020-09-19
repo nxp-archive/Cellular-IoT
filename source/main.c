@@ -52,9 +52,9 @@
 
 #include "aws_clientcredential.h"
 #include "aws_wifi.h"
-#include "aws_nbiot.h"
+#include "aws_CellIoT.h"
 #include "clock_config.h"
-#include "gm01q_api.h"
+#include "CellIoT_tools.h"
 #include "gsm/apps/gsm_init.h"
 #include "gsm/gsm_includes.h"
 
@@ -160,30 +160,30 @@ int initNetwork(void)
 #ifndef USE_TLS_IN_MCU
 	configPRINTF(("Erase CA certificate / client certificate / private key in the NB-IoT module\r\n"));
 	gsmr_t xResult;
-	xResult = gm01q_api_WriteCertKeyInNVM(NULL, SQNS_MQTT_CERTIFICATE, 0, 0, NULL, NULL, 1);
+	xResult = CellIoT_tools_WriteCertKeyInNVM(NULL, SQNS_MQTT_CERTIFICATE, 0, 0, NULL, NULL, 1);
 	PRINTF("xResult:%d\n",xResult);
-	xResult = gm01q_api_WriteCertKeyInNVM(NULL, SQNS_MQTT_CERTIFICATE, 1, 0, NULL, NULL, 1 );
+	xResult = CellIoT_tools_WriteCertKeyInNVM(NULL, SQNS_MQTT_CERTIFICATE, 1, 0, NULL, NULL, 1 );
 	PRINTF("xResult:%d\n",xResult);
-	xResult = gm01q_api_WriteCertKeyInNVM(NULL, SQNS_MQTT_PRIVATEKEY,  2, 0, NULL, NULL, 1 );
+	xResult = CellIoT_tools_WriteCertKeyInNVM(NULL, SQNS_MQTT_PRIVATEKEY,  2, 0, NULL, NULL, 1 );
 	PRINTF("xResult:%d\n",xResult);
 
 	configPRINTF(("Send the CA certificate / client certificate / private key to the NB-IoT module\r\n"));
-	xResult = gm01q_api_WriteCertKeyInNVM(keyCERTIFICATE_AUTHORITY_PEM, SQNS_MQTT_CERTIFICATE, 0, sizeof( keyCERTIFICATE_AUTHORITY_PEM ) - 1, NULL, NULL, 1);
+	xResult = CellIoT_tools_WriteCertKeyInNVM(keyCERTIFICATE_AUTHORITY_PEM, SQNS_MQTT_CERTIFICATE, 0, sizeof( keyCERTIFICATE_AUTHORITY_PEM ) - 1, NULL, NULL, 1);
 	PRINTF("xResult:%d\n",xResult);
-	xResult = gm01q_api_WriteCertKeyInNVM(keyCLIENT_CERTIFICATE_PEM, SQNS_MQTT_CERTIFICATE, 1, sizeof( keyCLIENT_CERTIFICATE_PEM ) - 1, NULL, NULL, 1 );
+	xResult = CellIoT_tools_WriteCertKeyInNVM(keyCLIENT_CERTIFICATE_PEM, SQNS_MQTT_CERTIFICATE, 1, sizeof( keyCLIENT_CERTIFICATE_PEM ) - 1, NULL, NULL, 1 );
 	PRINTF("xResult:%d\n",xResult);
-	xResult = gm01q_api_WriteCertKeyInNVM(keyCLIENT_PRIVATE_KEY_PEM, SQNS_MQTT_PRIVATEKEY, 2, sizeof( keyCLIENT_PRIVATE_KEY_PEM ) - 1, NULL, NULL, 1 );
+	xResult = CellIoT_tools_WriteCertKeyInNVM(keyCLIENT_PRIVATE_KEY_PEM, SQNS_MQTT_PRIVATEKEY, 2, sizeof( keyCLIENT_PRIVATE_KEY_PEM ) - 1, NULL, NULL, 1 );
 	PRINTF("xResult:%d\n",xResult);
 #endif
 
 #ifdef DBG_ON_CELLULAR_MODULE
-	gm01q_api_setLogInModule();
+	CellIoT_tools_setLogInModule();
 #ifdef USE_TRUPHONE
-	gm01q_api_setConfTestMode("truphone", NULL, NULL, 1);
+	CellIoT_tools_setConfTestMode("truphone", NULL, NULL, 1);
 #else
-	gm01q_api_setConfTestMode("verizon", NULL, NULL, 1);
+	CellIoT_tools_setConfTestMode("verizon", NULL, NULL, 1);
 #endif /* USE_TRUPHONE */
-	gm01q_api_readConfTestMode();
+	CellIoT_tools_readConfTestMode();
 #endif /* DBG_ON_CELLULAR_MODULE */
 
 	return INIT_SUCCESS;
