@@ -31,8 +31,8 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "gsm/gsm_private.h"
-#include "gsm/gsm_unicode.h"
+#include "gsm_private.h"
+#include "gsm_unicode.h"
 
 /**
  * \brief           Decode single character for unicode (UTF-8 only) format

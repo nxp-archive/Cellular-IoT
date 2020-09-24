@@ -6,8 +6,8 @@
 #if GSM_CFG_SMS || __DOXYGEN__
 
 #include "sms_send_receive.h"
-#include "gsm/gsm.h"
-#include "gsm/gsm_mem.h"
+#include "gsm.h"
+#include "gsm_mem.h"
 
 static gsmr_t sms_evt_func(gsm_evt_t* evt);
 

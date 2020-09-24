@@ -1,6 +1,6 @@
 #include "netconn_client.h"
-#include "gsm/gsm.h"
-#include "gsm/gsm_network_api.h"
+#include "gsm.h"
+#include "gsm_network_api.h"
 
 #if GSM_CFG_NETCONN
 

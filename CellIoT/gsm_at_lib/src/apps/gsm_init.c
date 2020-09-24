@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "gsm/apps/gsm_init.h"
-#include "gsm/gsm.h"
+#include "gsm_init.h"
+#include "gsm.h"
 #include "sim_manager.h"
 #include "network_apn_settings.h"
 #include "network_utils.h"

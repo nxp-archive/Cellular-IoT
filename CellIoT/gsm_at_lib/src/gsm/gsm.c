@@ -31,10 +31,10 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "gsm/gsm_private.h"
-#include "gsm/gsm_mem.h"
-#include "gsm/gsm_threads.h"
-#include "system/gsm_ll.h"
+#include "gsm_private.h"
+#include "gsm_mem.h"
+#include "gsm_threads.h"
+#include "gsm_ll.h"
 
 #if GSM_CFG_OS != 1
 #error GSM_CFG_OS must be set to 1!

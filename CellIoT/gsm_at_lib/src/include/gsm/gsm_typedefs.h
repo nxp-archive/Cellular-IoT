@@ -87,7 +87,7 @@ typedef enum {
  */
 typedef enum {
 #define GSM_DEVICE_MODEL_ENTRY(name, str_id, is_2g, is_lte)     GSM_DEVICE_MODEL_ ## name,
-#include "gsm/gsm_models.h"
+#include "gsm_models.h"
     GSM_DEVICE_MODEL_END,                       /*!< End of device model */
     GSM_DEVICE_MODEL_UNKNOWN,                   /*!< Unknown device model */
 } gsm_device_model_t;
@@ -158,7 +158,7 @@ typedef enum {
  */
 typedef enum {
 #define GSM_DEV_MEMORY_ENTRY(name, str_code)    GSM_MEM_ ## name,
-#include "gsm/gsm_memories.h"
+#include "gsm_memories.h"
     GSM_MEM_END,                                /*!< End of memory list */
     GSM_MEM_CURRENT,                            /*!< Use current memory for read/delete operation */
     GSM_MEM_UNKNOWN = 0x1F,                     /*!< Unknown memory */

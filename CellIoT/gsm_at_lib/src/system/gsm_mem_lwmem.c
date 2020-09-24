@@ -31,7 +31,7 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "gsm/gsm.h"
+#include "gsm.h"
 
 /* See gsm_mem.c file for function documentation on parameters and return values */
 

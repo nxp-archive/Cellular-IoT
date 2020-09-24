@@ -15,7 +15,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "gsm/apps/gsm_config.h"
+#include "gsm_config.h"
 
 /**
  * \addtogroup      GSM_SYS

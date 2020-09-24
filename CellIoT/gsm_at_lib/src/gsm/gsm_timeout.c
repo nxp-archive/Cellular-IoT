@@ -31,9 +31,9 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "gsm/gsm_private.h"
-#include "gsm/gsm_timeout.h"
-#include "gsm/gsm_mem.h"
+#include "gsm_private.h"
+#include "gsm_timeout.h"
+#include "gsm_mem.h"
 
 static gsm_timeout_t* first_timeout;
 static uint32_t last_timeout_time;

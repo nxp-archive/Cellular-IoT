@@ -29,8 +29,8 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "system/gsm_sys.h"
-#include "system/gsm_sys_user.h"
+#include "gsm_sys.h"
+#include "gsm_sys_user.h"
 
 /*******************************************/
 /*******************************************/

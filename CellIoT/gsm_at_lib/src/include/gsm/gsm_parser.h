@@ -38,7 +38,7 @@
 extern "C" {
 #endif /* defined(__cplusplus) */
 
-#include "gsm/gsm.h"
+#include "gsm.h"
 
 int32_t     gsmi_parse_number(const char** str);
 uint8_t     gsmi_parse_string(const char** src, char* dst, size_t dst_len, uint8_t trim);

@@ -1,8 +1,8 @@
 /*
- * Amazon FreeRTOS V1.0.0
+ * FreeRTOS V1.0.0
  * Copyright (C) 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  * Copyright (c) 2013 - 2014, Freescale Semiconductor, Inc.
- * Copyright 2016-2018 NXP
+ * Copyright 2016-2020 NXP
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -33,15 +33,16 @@
 #include "board.h"
 #include "fsl_debug_console.h"
 #include "ksdk_mbedtls.h"
-
 #include "pin_mux.h"
 
-/* Amazon FreeRTOS Demo Includes */
+/* FreeRTOS Demo Includes */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "aws_logging_task.h"
-#include "aws_system_init.h"
+#include "iot_logging_task.h"
+#include "iot_system_init.h"
 #include "aws_dev_mode_key_provisioning.h"
+#include "platform/iot_threads.h"
+#include "types/iot_network_types.h"
 
 /* Board specific accelerometer driver include */
 #if defined(BOARD_ACCEL_FXOS)
@@ -51,37 +52,37 @@
 #endif
 
 #include "aws_clientcredential.h"
-#include "aws_wifi.h"
 #include "aws_CellIoT.h"
 #include "clock_config.h"
-#include "CellIoT_tools.h"
-#include "gsm/apps/gsm_init.h"
-#include "gsm/gsm_includes.h"
+#include "CellIoT_lib.h"
+#include "gsm_init.h"
+#include "gsm_includes.h"
 
 #include "msft_Azure_IoT.h"
+#include "fsl_power.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
 #define INIT_SUCCESS 0
-#define INIT_FAIL 1
+#define INIT_FAIL    1
 
-#define LOGGING_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
+#define LOGGING_TASK_PRIORITY   (tskIDLE_PRIORITY + 1)
 #define LOGGING_TASK_STACK_SIZE (200)
-#define LOGGING_QUEUE_LENGTH (16)
+#define LOGGING_QUEUE_LENGTH    (16)
 
 /* Accelerometer driver specific defines */
 #if defined(BOARD_ACCEL_FXOS)
-#define XYZ_DATA_CFG XYZ_DATA_CFG_REG
-#define ACCEL_INIT(handle, config) FXOS_Init(handle, config)
-#define ACCEL_READ_REG(handle, reg, val) FXOS_ReadReg(handle, reg, val, 1)
+#define XYZ_DATA_CFG                          XYZ_DATA_CFG_REG
+#define ACCEL_INIT(handle, config)            FXOS_Init(handle, config)
+#define ACCEL_READ_REG(handle, reg, val)      FXOS_ReadReg(handle, reg, val, 1)
 #define ACCELL_READ_SENSOR_DATA(handle, data) FXOS_ReadSensorData(handle, data)
-#define ACCEL_GET_RESOLUTION() FXOS_GetResolutionBits()
+#define ACCEL_GET_RESOLUTION()                FXOS_GetResolutionBits()
 #elif defined(BOARD_ACCEL_MMA)
-#define XYZ_DATA_CFG kMMA8652_XYZ_DATA_CFG
-#define ACCEL_INIT(handle, config) MMA_Init(handle, config)
-#define ACCEL_READ_REG(handle, reg, val) MMA_ReadReg(handle, reg, val)
+#define XYZ_DATA_CFG                          kMMA8652_XYZ_DATA_CFG
+#define ACCEL_INIT(handle, config)            MMA_Init(handle, config)
+#define ACCEL_READ_REG(handle, reg, val)      MMA_ReadReg(handle, reg, val)
 #define ACCELL_READ_SENSOR_DATA(handle, data) MMA_ReadSensorData(handle, data)
-#define ACCEL_GET_RESOLUTION() MMA_GetResolutionBits()
+#define ACCEL_GET_RESOLUTION()                MMA_GetResolutionBits()
 #endif
 
 /* Accelerometer and magnetometer */
@@ -134,7 +135,7 @@ int initNetwork(void)
      * - Creation of AT Command process task (gsm_thread_process) and its associated queue
      * - Configuration of the low-level layers (Pins config, USART, DMA, Timers)
      * - Creation of the USART Receiving task (usart_ll_thread)
-     * - Reseting the NB-IoT module
+     * - Reseting the Cellular-IoT module
      */
 	result = (uint8_t)AT_Parser_Init();
 	if (result != gsmOK)
@@ -155,35 +156,15 @@ int initNetwork(void)
 	{
 		vTaskDelay(pdMS_TO_TICKS(100));
 	}
-	/* Do not enable this section, the certificates and private keys are already stored in the NB-IoT module */
-	/* The issue is that we get a +CME ERROR: 4 when sending one of these commands most of the time */
-#ifndef USE_TLS_IN_MCU
-	configPRINTF(("Erase CA certificate / client certificate / private key in the NB-IoT module\r\n"));
-	gsmr_t xResult;
-	xResult = CellIoT_tools_WriteCertKeyInNVM(NULL, SQNS_MQTT_CERTIFICATE, 0, 0, NULL, NULL, 1);
-	PRINTF("xResult:%d\n",xResult);
-	xResult = CellIoT_tools_WriteCertKeyInNVM(NULL, SQNS_MQTT_CERTIFICATE, 1, 0, NULL, NULL, 1 );
-	PRINTF("xResult:%d\n",xResult);
-	xResult = CellIoT_tools_WriteCertKeyInNVM(NULL, SQNS_MQTT_PRIVATEKEY,  2, 0, NULL, NULL, 1 );
-	PRINTF("xResult:%d\n",xResult);
-
-	configPRINTF(("Send the CA certificate / client certificate / private key to the NB-IoT module\r\n"));
-	xResult = CellIoT_tools_WriteCertKeyInNVM(keyCERTIFICATE_AUTHORITY_PEM, SQNS_MQTT_CERTIFICATE, 0, sizeof( keyCERTIFICATE_AUTHORITY_PEM ) - 1, NULL, NULL, 1);
-	PRINTF("xResult:%d\n",xResult);
-	xResult = CellIoT_tools_WriteCertKeyInNVM(keyCLIENT_CERTIFICATE_PEM, SQNS_MQTT_CERTIFICATE, 1, sizeof( keyCLIENT_CERTIFICATE_PEM ) - 1, NULL, NULL, 1 );
-	PRINTF("xResult:%d\n",xResult);
-	xResult = CellIoT_tools_WriteCertKeyInNVM(keyCLIENT_PRIVATE_KEY_PEM, SQNS_MQTT_PRIVATEKEY, 2, sizeof( keyCLIENT_PRIVATE_KEY_PEM ) - 1, NULL, NULL, 1 );
-	PRINTF("xResult:%d\n",xResult);
-#endif
 
 #ifdef DBG_ON_CELLULAR_MODULE
-	CellIoT_tools_setLogInModule();
+	CellIoT_lib_setLogInModule();
 #ifdef USE_TRUPHONE
-	CellIoT_tools_setConfTestMode("truphone", NULL, NULL, 1);
+	CellIoT_lib_setConfTestMode("truphone", NULL, NULL, 1);
 #else
-	CellIoT_tools_setConfTestMode("verizon", NULL, NULL, 1);
+	CellIoT_lib_setConfTestMode("verizon", NULL, NULL, 1);
 #endif /* USE_TRUPHONE */
-	CellIoT_tools_readConfTestMode();
+	CellIoT_lib_readConfTestMode();
 #endif /* DBG_ON_CELLULAR_MODULE */
 
 	return INIT_SUCCESS;
@@ -338,6 +319,8 @@ void vApplicationDaemonTaskStartupHook(void)
 
 int main(void)
 {
+    /* set BOD VBAT level to 1.65V */
+    POWER_SetBodVbatLevel(kPOWER_BodVbatLevel1650mv, kPOWER_BodHystLevel50mv, false);
     /* attach main clock divide to FLEXCOMM0 (debug console) */
     CLOCK_AttachClk(BOARD_DEBUG_UART_CLK_ATTACH);
 

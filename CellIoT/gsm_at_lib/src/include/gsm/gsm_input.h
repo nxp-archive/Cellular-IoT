@@ -39,7 +39,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #include <string.h>
-#include "gsm/gsm.h"
+#include "gsm.h"
 
 /**
  * \ingroup         GSM

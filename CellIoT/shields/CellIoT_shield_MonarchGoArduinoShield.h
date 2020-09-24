@@ -10,7 +10,7 @@
 
 #include "board.h"
 #include "pin_mux.h"
-#include "CellIoT_tools.h"
+#include "CellIoT_lib.h"
 #include "fsl_clock.h"
 #include "fsl_reset.h"
 #include "FreeRTOS.h"
@@ -41,9 +41,9 @@ extern dma_handle_t g_timerTransferHandle;
 #define CELLIOTSHIELD_USART_IRQ_PRIORITY (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY)
 #define CELLIOTSHIELD_USART_RTOS_HANDLE (g_uartRtosHandle)
 #define CELLIOTSHIELD_USART_HANDLE (g_uartHandle)
-#define CELLIOTSHIELD_USART_RING_BUFFER (g_rxRingBuffer)
+#define CELLIOTSHIELD_USART_RING_BUFFER (g_rxBuffer_2)
 #define CELLIOTSHIELD_USART_TX_BUFFER (g_txBuffer)
-#define CELLIOTSHIELD_USART_RX_BUFFER (g_rxBuffer)
+#define CELLIOTSHIELD_USART_RX_BUFFER (g_rxBuffer_1)
 #define CELLIOTSHIELD_USART_BUFFER_SIZE (AT_BUFFER_SIZE)
 #define CELLIOTSHIELD_USART_QUEUE_SIZE (10U)
 

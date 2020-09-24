@@ -39,7 +39,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 /* Get most important include files */
-#include "gsm/gsm_includes.h"
+#include "gsm_includes.h"
 
 /**
  * \defgroup        GSM GSM-AT Lib

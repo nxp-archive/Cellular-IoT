@@ -31,9 +31,9 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "gsm/gsm_private.h"
-#include "gsm/gsm_evt.h"
-#include "gsm/gsm_mem.h"
+#include "gsm_private.h"
+#include "gsm_evt.h"
+#include "gsm_mem.h"
 
 /**
  * \brief           Register callback function for global (non-connection based) events

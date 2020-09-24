@@ -40,13 +40,13 @@
  *
  * \ref GSM_CFG_INPUT_USE_PROCESS must be enabled in `gsm_config.h` to use this driver.
  */
-#include "gsm/gsm.h"
-#include "gsm/gsm_mem.h"
-#include "gsm/gsm_input.h"
-#include "system/gsm_ll.h"
+#include "gsm.h"
+#include "gsm_mem.h"
+#include "gsm_input.h"
+#include "gsm_ll.h"
 #include "CellIoT_common.h"
 #include "aws_CellIoT.h"
-#include "CellIoT_tools.h"
+#include "CellIoT_lib.h"
 #include "fsl_usart_dma.h"
 #include "FreeRTOS.h"
 #include "fsl_mrt.h"
@@ -154,12 +154,12 @@ void
 configure_uart(uint32_t baudrate) {
 	uint8_t result;
 
-	configPRINTF(("Starting NB-IoT Hardware configuration...\r\n"));
+	configPRINTF(("Starting Cellular-IoT Hardware configuration...\r\n"));
 
 	result = (uint8_t)CELLIOT_On(baudrate);
 	if (result != eCellIoTSuccess)
 	{
-		configPRINTF(("Could not enable NB-IoT, reason %d.\r\n", result));
+		configPRINTF(("Could not enable Cellular-IoT, reason %d.\r\n", result));
 		return;
 	}
 
@@ -167,7 +167,7 @@ configure_uart(uint32_t baudrate) {
 	ptr_cur_buff = CELLIOTSHIELD_USART_RX_BUFFER;
 	ptr_prv_buff = CELLIOTSHIELD_USART_RING_BUFFER;
 
-	configPRINTF(("NB-IoT Hardware configuration initialized.\r\n"));
+	configPRINTF(("Cellular-IoT Hardware configuration initialized.\r\n"));
 
 	old_pos = 0;
 	is_running = 1;

@@ -38,10 +38,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include "gsm/gsm.h"
-#include "gsm/gsm_typedefs.h"
-#include "gsm/gsm_debug.h"
-#include "gsm/gsm_mem.h"
+#include "gsm.h"
+#include "gsm_typedefs.h"
+#include "gsm_debug.h"
+#include "gsm_mem.h"
 
 /**
  * \addtogroup      GSM_TYPEDEFS
@@ -278,6 +278,10 @@ typedef enum {
 	GSM_CMD_SQNDISHPPLMN,
 	GSM_CMD_SQNCTM_GET,						/*!< Read the current conformance test mode */
 	GSM_CMD_SQNCTM_SET,							/*!< Set the current conformance test mode */
+	GSM_CMD_SQNBANDSEL_GET,
+	GSM_CMD_SQNBANDSEL_SET,
+	GSM_CMD_UCI_SET,
+	GSM_CMD_UCI_SET_TWO,
 #endif /* GSM_SEQUANS_SPECIFIC_CMD */
 
     GSM_CMD_END,                                /*!< Last CMD entry */
@@ -611,6 +615,14 @@ typedef struct gsm_msg {
 		struct {
 			const char* ctm;               		/*!< Conformance Test Mode */
 		} set_conformance_test;
+		struct {
+			uint8_t idOne;
+			const char* band;
+			const char* band_number;
+		} set_band_select;
+		struct {
+			uint8_t id;
+		} set_ati;
 
 #endif /* GSM_SEQUANS_SPECIFIC_CMD || __DOXYGEN__ */
     } msg;                                      /*!< Group of different possible message contents */

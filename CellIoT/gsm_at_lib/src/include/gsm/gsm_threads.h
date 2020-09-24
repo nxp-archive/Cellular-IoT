@@ -38,7 +38,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include "gsm/gsm.h"
+#include "gsm.h"
 
 void    gsm_thread_produce(void* const arg);
 void    gsm_thread_process(void* const arg);

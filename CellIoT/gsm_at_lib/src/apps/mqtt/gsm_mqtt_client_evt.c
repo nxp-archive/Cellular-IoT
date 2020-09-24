@@ -31,5 +31,5 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "gsm/apps/gsm_mqtt_client_evt.h"
+#include "gsm_mqtt_client_evt.h"
 

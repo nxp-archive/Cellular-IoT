@@ -38,7 +38,7 @@
 extern "C" {
 #endif
 
-#include "gsm/apps/gsm_mqtt_client.h"
+#include "gsm_mqtt_client.h"
 
 /**
  * \ingroup         GSM_APP_MQTT_CLIENT

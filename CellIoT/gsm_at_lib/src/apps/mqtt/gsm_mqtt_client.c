@@ -31,9 +31,9 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "gsm/apps/gsm_mqtt_client.h"
-#include "gsm/gsm_mem.h"
-#include "gsm/gsm_pbuf.h"
+#include "gsm_mqtt_client.h"
+#include "gsm_mem.h"
+#include "gsm_pbuf.h"
 
 /**
  * \brief           MQTT client connection

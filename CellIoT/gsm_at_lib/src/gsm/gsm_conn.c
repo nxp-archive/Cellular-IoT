@@ -31,10 +31,10 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "gsm/gsm_private.h"
-#include "gsm/gsm_conn.h"
-#include "gsm/gsm_mem.h"
-#include "gsm/gsm_timeout.h"
+#include "gsm_private.h"
+#include "gsm_conn.h"
+#include "gsm_mem.h"
+#include "gsm_timeout.h"
 
 #if GSM_CFG_CONN || __DOXYGEN__
 

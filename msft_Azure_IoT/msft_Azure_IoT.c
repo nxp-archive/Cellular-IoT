@@ -22,7 +22,7 @@
 #include "task.h"
 #include "msft_Azure_IoT.h"
 #include "msft_Azure_IoT_clientcredential.h"
-#include "aws_mqtt_agent.h"
+#include "iot_mqtt_agent.h"
 #include "event_groups.h"
 #include "board.h"
 
@@ -138,14 +138,14 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
     xConnectParams.ulCertificateSize = AZURE_SERVER_ROOT_CERTIFICATE_PEM_LENGTH;
     xConnectParams.pxCallback = NULL;
     xConnectParams.pvUserData = NULL;
-    xConnectParams.cUserName = AZURE_IOT_MQTT_USERNAME;
-    xConnectParams.uUsernamelength = ( uint16_t ) strlen(AZURE_IOT_MQTT_USERNAME);
-
     xConnectParams.pucClientId = ( const uint8_t * ) ( AZURE_DEVICE_NAME );
     xConnectParams.usClientIdLength = ( uint16_t ) strlen( AZURE_DEVICE_NAME );
+#if SSS_USE_FTR_FILE
+    xConnectParams.cUserName = AZURE_IOT_MQTT_USERNAME;
+    xConnectParams.uUsernamelength = ( uint16_t ) strlen(AZURE_IOT_MQTT_USERNAME);
     xConnectParams.p_password = NULL ;
     xConnectParams.passwordlength = 0;
-
+#endif
 //    xCloudServiceHandle.xSlot = 1;
 //    xCloudServiceHandle.eCldSrv = Azure_Service;
 

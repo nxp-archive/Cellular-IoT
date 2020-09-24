@@ -31,8 +31,8 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "gsm/apps/gsm_mqtt_client_api.h"
-#include "gsm/gsm_mem.h"
+#include "gsm_mqtt_client_api.h"
+#include "gsm_mem.h"
 
 /* Tracing debug message */
 #define GSM_CFG_DBG_MQTT_API_TRACE              (GSM_CFG_DBG_MQTT_API | GSM_DBG_TYPE_TRACE)

@@ -7,10 +7,10 @@
 
 /**
  * @file CellIoT_shield.c
- * @brief NB-IoT Shield Interface.
+ * @brief Cellular-IoT Shield Interface.
  */
 #include "CellIoT_shield.h"
-#include "CellIoT_tools.h"
+#include "CellIoT_lib.h"
 #include "fsl_usart.h"
 #include "fsl_ctimer.h"
 #include "fsl_inputmux.h"
@@ -67,7 +67,7 @@ int CELLIOTSHIELD_Init( uint32_t baudrate )
 }
 
 /**
- * @brief Configure the USART for the NB-IoT module.
+ * @brief Configure the USART for the Cellular-IoT module.
  */
 int CELLIOTSHIELD_USARTConfig( uint32_t baudrate )
 {
@@ -100,7 +100,7 @@ int CELLIOTSHIELD_USARTConfig( uint32_t baudrate )
 }
 
 /**
- * @brief Configure the DMA for the USART communication with the NB-IoT module.
+ * @brief Configure the DMA for the USART communication with the Cellular-IoT module.
  */
 int CELLIOTSHIELD_DMAConfig( void )
 {

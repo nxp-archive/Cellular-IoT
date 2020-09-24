@@ -38,7 +38,7 @@
 extern "C" {
 #endif
 
-#include "gsm/gsm.h"
+#include "gsm.h"
 
 /**
  * \ingroup         GSM

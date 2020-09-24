@@ -31,10 +31,10 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "gsm/gsm_private.h"
-#include "gsm/gsm_parser.h"
-#include "gsm/gsm_mem.h"
-#include "CellIoT_tools.h"
+#include "gsm_private.h"
+#include "gsm_parser.h"
+#include "gsm_mem.h"
+#include "CellIoT_lib.h"
 #include "math.h"
 
 /**
@@ -1047,7 +1047,7 @@ gsmi_parse_rcvdata_update(const char* str)
 	read_count = ( uint32_t ) gsmi_parse_number( (const char**) &ptx);
 
 	/* store pending RX info */
-	CellIoT_tools_socketStoreRXData_Pending_Info( conn_id , read_count );
+	CellIoT_lib_socketStoreRXData_Pending_Info( conn_id , read_count );
 
 //	ptx++;		/* Skip the , character */
 //	gsmi_receive_raw((const char *)ptx , conn_id , read_count );

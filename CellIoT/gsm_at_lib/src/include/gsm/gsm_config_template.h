@@ -37,11 +37,11 @@
 /* Rename this file to "gsm_config.h" for your application */
 
 /*
- * Open "include/gsm/gsm_config_default.h" and
+ * Open "include gsm_config_default.h" and
  * copy & replace here settings you want to change values
  */
 
 /* After user configuration, call default config to merge config together */
-#include "gsm/gsm_config_default.h"
+#include "gsm_config_default.h"
 
 #endif /* GSM_HDR_CONFIG_H */

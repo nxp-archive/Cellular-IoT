@@ -31,14 +31,14 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "gsm/gsm_private.h"
-#include "gsm/gsm_threads.h"
-#include "gsm/gsm_parser.h"
-#include "gsm/gsm_int.h"
-#include "gsm/gsm_timeout.h"
-#include "gsm/gsm.h"
-#include "gsm/gsm_mem.h"
-#include "system/gsm_sys.h"
+#include "gsm_private.h"
+#include "gsm_threads.h"
+#include "gsm_parser.h"
+#include "gsm_int.h"
+#include "gsm_timeout.h"
+#include "gsm.h"
+#include "gsm_mem.h"
+#include "gsm_sys.h"
 
 /**
  * \brief           User thread to process input packets from API functions

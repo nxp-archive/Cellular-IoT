@@ -31,9 +31,9 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "gsm/gsm_private.h"
-#include "gsm/gsm_debug.h"
-#include "gsm/gsm.h"
+#include "gsm_private.h"
+#include "gsm_debug.h"
+#include "gsm.h"
 
 #if GSM_CFG_DBG || __DOXYGEN__
 

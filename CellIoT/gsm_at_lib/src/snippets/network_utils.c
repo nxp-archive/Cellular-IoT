@@ -1,5 +1,5 @@
 #include "network_utils.h"
-#include "gsm/gsm.h"
+#include "gsm.h"
 
 /**
  * \brief           RSSI state on network

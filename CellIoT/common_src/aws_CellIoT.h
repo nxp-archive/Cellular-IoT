@@ -7,7 +7,7 @@
 
 /**
  * @file aws_CellIoT.h
- * @brief NB-IoT Interface.
+ * @brief Cellular-IoT Interface.
  */
 
 #ifndef _AWS_CELLIOT_H_

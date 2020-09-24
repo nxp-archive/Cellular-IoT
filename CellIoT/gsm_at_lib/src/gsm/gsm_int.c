@@ -34,16 +34,16 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v0.6.0
  */
-#include "gsm/gsm_private.h"
-#include "gsm/gsm.h"
-#include "gsm/gsm_int.h"
-#include "gsm/gsm_mem.h"
-#include "gsm/gsm_parser.h"
-#include "gsm/gsm_unicode.h"
-#include "system/gsm_ll.h"
+#include "gsm_private.h"
+#include "gsm.h"
+#include "gsm_int.h"
+#include "gsm_mem.h"
+#include "gsm_parser.h"
+#include "gsm_unicode.h"
+#include "gsm_ll.h"
 #include "stddef.h"
 #include "fsl_dma.h"
-#include "CellIoT_tools.h"
+#include "CellIoT_lib.h"
 
 #if !__DOXYGEN__
 /**
@@ -93,7 +93,7 @@ static gsmr_t gsmi_process_sub_cmd(gsm_msg_t* msg, uint8_t* is_ok, uint16_t* is_
 const gsm_dev_mem_map_t
 gsm_dev_mem_map[] = {
 #define GSM_DEV_MEMORY_ENTRY(name, str_code)    { GSM_MEM_ ## name, str_code },
-#include "gsm/gsm_memories.h"
+#include "gsm_memories.h"
 };
 
 /**
@@ -108,7 +108,7 @@ gsm_dev_mem_map_size = GSM_ARRAYSIZE(gsm_dev_mem_map);
 const gsm_dev_model_map_t
 gsm_dev_model_map[] = {
 #define GSM_DEVICE_MODEL_ENTRY(name, str_id, is_2g, is_lte)     { GSM_DEVICE_MODEL_ ## name, str_id, is_2g, is_lte },
-#include "gsm/gsm_models.h"
+#include "gsm_models.h"
 };
 
 /**
@@ -1593,10 +1593,10 @@ gsmi_process(const void* data, size_t data_len) {
 						bytes_to_read = gsmi_handle_recv_string(recv_buff.data, ring_recv );
                 	}
 
-					if(  bytes_to_read != 0 )
+					if( bytes_to_read != 0 )
 					{
 						RECV_ADD(ch);
-						if( recv_buff.len == bytes_to_read  )
+						if( recv_buff.len == bytes_to_read )
 						{
 							gsmi_parse_received(&recv_buff);	/* Parse received string */
 							RECV_RESET();       /* Reset received string */

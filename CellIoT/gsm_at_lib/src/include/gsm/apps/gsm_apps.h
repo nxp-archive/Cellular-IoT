@@ -38,7 +38,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include "gsm/gsm.h"
+#include "gsm.h"
 
 /**
  * \defgroup        GSM_APPS Applications

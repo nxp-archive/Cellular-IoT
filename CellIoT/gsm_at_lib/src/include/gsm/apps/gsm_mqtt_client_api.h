@@ -38,8 +38,8 @@
 extern "C" {
 #endif
 
-#include "gsm/gsm.h"
-#include "gsm/apps/gsm_mqtt_client.h"
+#include "gsm.h"
+#include "gsm_mqtt_client.h"
 
 /**
  * \ingroup         GSM_APPS
