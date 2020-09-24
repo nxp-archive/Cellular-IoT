@@ -1,6 +1,6 @@
 /*
- * Amazon FreeRTOS V1.4.7
- * Copyright (C) 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * FreeRTOS V202002.00
+ * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,41 +23,32 @@
  * http://www.FreeRTOS.org
  */
 
-
 #ifndef __AWS_CLIENTCREDENTIAL__H__
 #define __AWS_CLIENTCREDENTIAL__H__
 
 /*
- * Include for device certificate and private key
+ * @brief MQTT Broker endpoint.
+ *
+ * @todo Set this to the fully-qualified DNS name of your MQTT broker.
  */
-#include "aws_clientcredential_keys.h"
+#define clientcredentialMQTT_BROKER_ENDPOINT         ""
 
 /*
- * MQTT Broker endpoint.
+ * @brief Host name.
+ *
+ * @todo Set this to the unique name of your IoT Thing.
  */
-static const char clientcredentialMQTT_BROKER_ENDPOINT[] = "a1w9esfc772pai-ats.iot.us-east-1.amazonaws.com";
-
-
-/* Use of a "define" and not a "static const" here to be able to
- * use pre-compile concatenation on the string. */
-#define clientcredentialIOT_THING_NAME               "myNXPthing"
+#define clientcredentialIOT_THING_NAME               ""
 
 /*
- * Port number the MQTT broker is using.
+ * @brief Port number the MQTT broker is using.
  */
 #define clientcredentialMQTT_BROKER_PORT             8883
 
 /*
- * Port number the Green Grass Discovery use for JSON retrieval from cloud is using.
+ * @brief Port number the Green Grass Discovery use for JSON retrieval from cloud is using.
  */
 #define clientcredentialGREENGRASS_DISCOVERY_PORT    8443
 
-/**
- * @brief Security type
- * WPA2 Security, @see WIFISecurity_t
- * Possible values are - eWiFiSecurityOpen, eWiFiSecurityWEP, eWiFiSecurityWPA,
- * eWiFiSecurityWPA2
- */
-#define clientcredentialWIFI_SECURITY                eWiFiSecurityWPA2
 
 #endif /* ifndef __AWS_CLIENTCREDENTIAL__H__ */
