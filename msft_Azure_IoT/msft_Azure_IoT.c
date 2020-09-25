@@ -1,14 +1,9 @@
-//*****************************************************************************
-// Audio Microsoft AZure IoT Implementation
-//
-// Author: nxf52380
-//*****************************************************************************
-//
-// Copyright 2016-2020 NXP
-// All rights reserved.
-//
-// SPDX-License-Identifier: BSD-3-Clause
-//*****************************************************************************
+/*
+ * Copyright 2019-2020 NXP
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
 #ifndef MSFT_AZURE_C_
 #define MSFT_AZURE_C_
@@ -97,12 +92,12 @@ MQTTBool_t Twin_Operations_CallBack(void * pvPublishCallbackContext,
 
 		if( *ptrData == '1' )
 		{
-			AZUREDEBUG_PRINTF( ( AZURE_DEVICE_NAME " Playing Melody 1 \r\n" ) );
+			AZUREDEBUG_PRINTF( ( clientcredentialAZURE_IOT_THING_NAME " Playing Melody 1 \r\n" ) );
 //			melody = melody1;
 		}
 		else if( *ptrData == '2' )
 		{
-			AZUREDEBUG_PRINTF( ( AZURE_DEVICE_NAME " Playing Melody 2 \r\n" ) );
+			AZUREDEBUG_PRINTF( ( clientcredentialAZURE_IOT_THING_NAME " Playing Melody 2 \r\n" ) );
 //			melody = melody2;
 		}
 
@@ -120,8 +115,7 @@ MQTTBool_t Twin_Operations_CallBack(void * pvPublishCallbackContext,
 void prvmcsft_Azure_TwinTask( void * pvParameters )
 {
 	MQTTAgentReturnCode_t xMQTTReturn;
-	UBaseType_t Broker_Num = 1 /*2*/;
-//	CloudServiceHandle_t xCloudServiceHandle;
+	UBaseType_t Broker_Num = 1 ;
 	char cPayload[100];
 	char cTopic[50];
 	uint8_t Req_Id =1;
@@ -130,16 +124,17 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
     ( void ) pvParameters;
 
     memset( &xConnectParams, 0x00, sizeof( xConnectParams ) );
-    xConnectParams.pcURL = AZURE_IOT_HUB_BROKER_ENDPOINT;
-    xConnectParams.usPort = AZURE_IOT_MQTT_PORT;
+    xConnectParams.pcURL = clientcredentialAZURE_MQTT_BROKER_ENDPOINT;
+    xConnectParams.usPort = clientcredentialAZURE_MQTT_BROKER_PORT;
 
     xConnectParams.xFlags = mqttagentREQUIRE_TLS;
-    xConnectParams.pcCertificate =  (char *)AZURE_SERVER_ROOT_CERTIFICATE_PEM;
-    xConnectParams.ulCertificateSize = AZURE_SERVER_ROOT_CERTIFICATE_PEM_LENGTH;
+    xConnectParams.pcCertificate = NULL;
+    xConnectParams.ulCertificateSize = 0;
     xConnectParams.pxCallback = NULL;
     xConnectParams.pvUserData = NULL;
-    xConnectParams.pucClientId = ( const uint8_t * ) ( AZURE_DEVICE_NAME );
-    xConnectParams.usClientIdLength = ( uint16_t ) strlen( AZURE_DEVICE_NAME );
+
+    xConnectParams.pucClientId = (const uint8_t *)(clientcredentialAZURE_IOT_THING_NAME);
+    xConnectParams.usClientIdLength = (uint16_t)strlen(clientcredentialAZURE_IOT_THING_NAME);
 #if SSS_USE_FTR_FILE
     xConnectParams.cUserName = AZURE_IOT_MQTT_USERNAME;
     xConnectParams.uUsernamelength = ( uint16_t ) strlen(AZURE_IOT_MQTT_USERNAME);
@@ -167,16 +162,15 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
 
     		    xMQTTReturn = MQTT_AGENT_Connect( ( MQTTAgentHandle_t) Broker_Num,
     		    								  pConnectParams,
-    											  AzureTwinDemoTIMEOUT/*,
-    											  &xCloudServiceHandle */);
+    											  AzureTwinDemoTIMEOUT);
 
     		    if( eMQTTAgentSuccess == xMQTTReturn )
     		    {
-    		    	AZUREDEBUG_PRINTF( ( AZURE_DEVICE_NAME " Connected to Azure IoT Hub Successfully\r\n" ) );
+    		    	AZUREDEBUG_PRINTF( ("Connected to Azure IoT Hub Successfully\r\n") );
     		    }
     		    else
     		    {
-    		    	AZUREDEBUG_PRINTF( ( "Connection refused!! \r\n" ) );
+    		    	AZUREDEBUG_PRINTF( ("Connection refused!! \r\n") );
     		    	vTaskDelete(NULL);
     		    }
 
@@ -189,9 +183,9 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
     		    xUnsubscribeParams.pucTopic = (const uint8_t *)AZURE_OPERATION_RESPONSE_TOPIC;
     		    xUnsubscribeParams.usTopicLength = sizeof(AZURE_OPERATION_RESPONSE_TOPIC) - 1;
 
-    		    if( MQTT_AGENT_Subscribe(( MQTTAgentHandle_t) Broker_Num, &xSubscribeParams, pdMS_TO_TICKS(10000)) == eMQTTAgentSuccess)
+    		    if( MQTT_AGENT_Subscribe((MQTTAgentHandle_t) Broker_Num, &xSubscribeParams, pdMS_TO_TICKS(10000)) == eMQTTAgentSuccess)
     		    {
-    		    	AZUREDEBUG_PRINTF( ("Successfully Subscribe to Operations Topic\r\n"));
+    		    	AZUREDEBUG_PRINTF( ("Successfully Subscribe to Operations Topic\r\n") );
     		    }
     			enAzure_TW_Task = AZURE_TW_SET_STATE;
     			break;

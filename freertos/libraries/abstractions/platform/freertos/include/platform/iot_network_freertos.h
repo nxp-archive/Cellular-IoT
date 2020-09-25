@@ -42,8 +42,15 @@
 #include "iot_secure_sockets.h"
 
 /* Credentials include. */
+#if defined (USE_AWS_CLOUD)
 #include "aws_clientcredential.h"
 #include "aws_clientcredential_keys.h"
+#include "iot_default_root_certificates.h"
+#elif defined(USE_AZURE_CLOUD)
+#include "msft_Azure_IoT_clientcredential.h"
+#include "msft_Azure_IoT_clientcredential_keys.h"
+#include "azure_default_root_certificates.h"
+#endif
 
 /**
  * @brief Represents a network connection that uses FreeRTOS Secure Sockets.
@@ -80,11 +87,19 @@ typedef struct _networkConnection IotNetworkConnectionAfr_t;
  * @note This initializer may change at any time in future versions, but its
  * name will remain the same.
  */
+#ifdef USE_AWS_CLOUD
 #define AWS_IOT_NETWORK_SERVER_INFO_AFR_INITIALIZER        \
     {                                                      \
         .pHostName = clientcredentialMQTT_BROKER_ENDPOINT, \
         .port = clientcredentialMQTT_BROKER_PORT           \
     }
+#elif defined(USE_AZURE_CLOUD)
+#define AWS_IOT_NETWORK_SERVER_INFO_AFR_INITIALIZER              \
+    {                                                            \
+        .pHostName = clientcredentialAZURE_MQTT_BROKER_ENDPOINT, \
+        .port = clientcredentialAZURE_MQTT_BROKER_PORT           \
+    }
+#endif
 
 /**
  * @brief Generic initializer for an #IotNetworkCredentials_t.

@@ -44,8 +44,13 @@
 #  include "sss_mbedtls.h"
 #endif
 
+#if defined (USE_AWS_CLOUD)
 #include "aws_clientcredential_keys.h"
 #include "iot_default_root_certificates.h"
+#elif defined(USE_AZURE_CLOUD)
+#include "msft_Azure_IoT_clientcredential_keys.h"
+#include "azure_default_root_certificates.h"
+#endif
 #include "iot_pki_utils.h"
 
 /* mbedTLS includes. */
@@ -508,7 +513,9 @@ static int prvInitializeClientCredential( TLSContext_t * pxCtx )
     CK_ULONG xCount = 0;
     CK_ATTRIBUTE xTemplate[ 2 ];
     mbedtls_pk_type_t xKeyAlgo = ( mbedtls_pk_type_t ) ~0;
+#ifdef USE_AWS_CLOUD
     char * pcJitrCertificate = keyJITR_DEVICE_CERTIFICATE_AUTHORITY_PEM;
+#endif
 
     /* Initialize the mbed contexts. */
     mbedtls_x509_crt_init( &pxCtx->xMbedX509Cli );
@@ -639,6 +646,7 @@ static int prvInitializeClientCredential( TLSContext_t * pxCtx )
                                                  &pxCtx->xMbedX509Cli );
     }
 
+#ifdef USE_AWS_CLOUD
     /* Add a Just-in-Time Registration (JITR) device issuer certificate, if
      * present, to the TLS context handle. */
     if( xResult == CKR_OK )
@@ -666,6 +674,7 @@ static int prvInitializeClientCredential( TLSContext_t * pxCtx )
             }
         }
     }
+#endif
 
     /* Attach the client certificate(s) and private key to the TLS configuration. */
     if( 0 == xResult )
@@ -785,6 +794,7 @@ BaseType_t TLS_Connect( void * pvContext )
             TLS_PRINT( ( "ERROR: Failed to parse custom server certificates %d \r\n", xResult ) );
         }
     }
+#ifdef USE_AWS_CLOUD
     else
     {
         xResult = mbedtls_x509_crt_parse( &pxCtx->xMbedX509CA,
@@ -811,6 +821,20 @@ BaseType_t TLS_Connect( void * pvContext )
             TLS_PRINT( ( "ERROR: Failed to parse default server certificates %d \r\n", xResult ) );
         }
     }
+#elif USE_AZURE_CLOUD
+    else
+        {
+            xResult = mbedtls_x509_crt_parse( &pxCtx->xMbedX509CA,
+                                              ( const unsigned char * ) AZURE_SERVER_ROOT_CERTIFICATE_PEM,
+											  AZURE_SERVER_ROOT_CERTIFICATE_PEM_LENGTH );
+
+            if( 0 != xResult )
+            {
+                /* Default root certificates should be in aws_default_root_certificate.h */
+                TLS_PRINT( ( "ERROR: Failed to parse default server certificates %d \r\n", xResult ) );
+            }
+        }
+#endif
 
     /* Start with protocol defaults. */
     if( 0 == xResult )

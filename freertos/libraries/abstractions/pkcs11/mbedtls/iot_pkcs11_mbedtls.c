@@ -49,9 +49,15 @@
 #include "threading_alt.h"
 
 /* Credential includes. */
+#if defined (USE_AWS_CLOUD)
 #include "aws_clientcredential.h"
 #include "aws_clientcredential_keys.h"
 #include "iot_default_root_certificates.h"
+#elif defined(USE_AZURE_CLOUD)
+#include "msft_Azure_IoT_clientcredential.h"
+#include "msft_Azure_IoT_clientcredential_keys.h"
+#include "azure_default_root_certificates.h"
+#endif
 
 #if ( pkcs11configOTA_SUPPORTED == 1 )
     #include "aws_ota_codesigner_certificate.h"
@@ -588,6 +594,7 @@ CK_RV prvAddObjectToList( CK_OBJECT_HANDLE xPalHandle,
     {
         BaseType_t xResult = CK_TRUE;
 
+#ifdef USE_AWS_CLOUD
         if( 0 == memcmp( pucLabel, pkcs11configLABEL_JITP_CERTIFICATE, strlen( ( char * ) pkcs11configLABEL_JITP_CERTIFICATE ) ) )
         {
             if( NULL != keyJITR_DEVICE_CERTIFICATE_AUTHORITY_PEM )
@@ -625,6 +632,20 @@ CK_RV prvAddObjectToList( CK_OBJECT_HANDLE xPalHandle,
         }
 
         return xResult;
+#elif USE_AZURE_CLOUD
+        if( 0 == memcmp( pucLabel, pkcs11configLABEL_ROOT_CERTIFICATE, strlen( ( char * ) pkcs11configLABEL_ROOT_CERTIFICATE ) ) )
+		{
+
+			*ppucCertData = ( uint8_t * ) AZURE_SERVER_ROOT_CERTIFICATE_PEM;
+
+		}
+		else
+		{
+			xResult = CK_FALSE;
+		}
+
+		return xResult;
+#endif
     }
 
 

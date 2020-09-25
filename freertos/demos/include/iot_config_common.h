@@ -34,11 +34,17 @@
 /* Use platform types on FreeRTOS. */
 #include "platform/iot_platform_types_freertos.h"
 
+#if defined (USE_AWS_CLOUD)
 /* Used to get the cloud broker endpoint for FreeRTOS. */
 #include <aws_clientcredential.h>
-
 /* Used to get the certificate used by the device. */
 #include <aws_clientcredential_keys.h>
+#elif defined(USE_AZURE_CLOUD)
+/* Used to get the cloud broker endpoint for FreeRTOS. */
+#include "msft_Azure_IoT_clientcredential.h"
+/* Used to get the certificate used by the device. */
+#include "msft_Azure_IoT_clientcredential_keys.h"
+#endif
 
 /* SDK version. */
 #define IOT_SDK_VERSION    "4.0.0"
@@ -171,11 +177,21 @@
     #define IOT_PLATFORM_NAME    "Unknown"
 #endif
 
+#if defined (USE_AWS_CLOUD)
+
 /* Cloud endpoint to which the device connects to. */
 #define IOT_CLOUD_ENDPOINT        clientcredentialMQTT_BROKER_ENDPOINT
 
+#elif defined (USE_AZURE_CLOUD)
+
+/* Cloud endpoint to which the device connects to. */
+#define IOT_CLOUD_ENDPOINT        clientcredentialAZURE_MQTT_BROKER_ENDPOINT
+
+#endif
+
 /* Certificate for the device. */
 #define IOT_DEVICE_CERTIFICATE    keyCLIENT_CERTIFICATE_PEM
+
 
 /**
  * @brief Unique identifier used to recognize a device by the cloud.
