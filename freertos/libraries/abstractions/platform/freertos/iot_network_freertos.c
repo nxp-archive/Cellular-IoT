@@ -366,11 +366,9 @@ IotNetworkError_t IotNetworkAfr_Create( void * pConnectionInfo,
         }
     }
 
-    /* Configure secure socket */
+    /* Configure secure socket on the Cellular-IoT module */
 	SOCKETS_SetCfg();
 	SOCKETS_SetCfgExt();
-	SOCKETS_SetSockSecurity();
-	SOCKETS_SetTLSSecurityCfg();
 
     /* Establish connection. */
     serverAddress.ucSocketDomain = SOCKETS_AF_INET;

@@ -67,8 +67,9 @@ uint8_t     gsmi_parse_cpbf(const char* str);
 
 uint8_t     gsmi_parse_sqndnslkup(const char* str);
 uint8_t 	gsmi_parse_rcvdata_update(const char* str);
-uint8_t		gsmi_parse_rcvdata_ntf(const char* str);
+uint8_t		gsmi_parse_rcvdata_ntf(const char* str, uint8_t *, uint32_t *);
 uint32_t    gsmi_handle_recv_string(const char * str, uint8_t ring_recv );
+uint32_t 	gsmi_send_sqnsrecv(void);
 
 uint8_t     gsmi_parse_cipstatus_conn(const char* str, uint8_t is_conn_line, uint8_t* continueScan);
 

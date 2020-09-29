@@ -1,5 +1,6 @@
 /.settings/
-/Debug/
+/AWS_Cloud_Config_Debug/
+/Azure_Cloud_Config_Debug/
 lpcxpresso55s69_aws_remote_control_Cellular* LinkServer Debug.launch
 /freertos/demos/include/aws_clientcredential.h
 /freertos/demos/include/aws_clientcredential_keys.h

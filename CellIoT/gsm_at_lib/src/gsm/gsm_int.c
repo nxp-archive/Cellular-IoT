@@ -44,47 +44,13 @@
 #include "stddef.h"
 #include "fsl_dma.h"
 #include "CellIoT_lib.h"
-
-#if !__DOXYGEN__
-/**
- * \brief           Receive character structure to handle full line terminated with `\n` character
- */
-typedef struct {
-    char data[HANDLE_RECEIVE_BUFFER_SIZE];      /*!< Received characters */
-    size_t len;                                 /*!< Length of valid characters */
-} gsm_recv_t;
-
-/* Receive character macros */
-#define RECV_ADD(ch)                        do { if (recv_buff.len < (sizeof(recv_buff.data)) - 1) { recv_buff.data[recv_buff.len++] = ch; recv_buff.data[recv_buff.len] = 0; } } while (0)
-#define RECV_RESET()                        do { recv_buff.len = 0; recv_buff.data[0] = 0; } while (0)
-#define RECV_LEN()                          ((size_t)recv_buff.len)
-#define RECV_IDX(index)                     recv_buff.data[index]
-
-/* Send data over AT port */
-#define AT_PORT_SEND_STR(str)               gsm.ll.send_fn((const void *)(str), (size_t)strlen(str))
-#define AT_PORT_SEND_CONST_STR(str)         gsm.ll.send_fn((const void *)(str), (size_t)(sizeof(str) - 1))
-#define AT_PORT_SEND_CHR(ch)                gsm.ll.send_fn((const void *)(ch), (size_t)1)
-#define AT_PORT_SEND_FLUSH()                gsm.ll.send_fn(NULL, 0)
-#define AT_PORT_SEND(d, l)                  gsm.ll.send_fn((const void *)(d), (size_t)(l))
-#define AT_PORT_SEND_WITH_FLUSH(d, l)       do { AT_PORT_SEND((d), (l)); AT_PORT_SEND_FLUSH(); } while (0)
-
-/* Beginning and end of every AT command */
-#define AT_PORT_SEND_BEGIN_AT()             do { AT_PORT_SEND_CONST_STR("AT"); } while (0)
-#define AT_PORT_SEND_END_AT()               do { AT_PORT_SEND(CRLF, CRLF_LEN); AT_PORT_SEND(NULL, 0); } while (0)
-
-/* Send special characters over AT port with condition */
-#define AT_PORT_SEND_QUOTE_COND(q)          do { if ((q)) { AT_PORT_SEND_CONST_STR("\""); } } while (0)
-#define AT_PORT_SEND_COMMA_COND(c)          do { if ((c)) { AT_PORT_SEND_CONST_STR(","); } } while (0)
-#define AT_PORT_SEND_EQUAL_COND(e)          do { if ((e)) { AT_PORT_SEND_CONST_STR("="); } } while (0)
-
-/* Send special characters */
-#define AT_PORT_SEND_CTRL_Z()               AT_PORT_SEND_STR("\x1A")
-#define AT_PORT_SEND_ESC()                  AT_PORT_SEND_STR("\x1B")
-#endif /* !__DOXYGEN__ */
+#include "fsl_debug_console.h"
 
 static gsm_recv_t recv_buff = {0};
 static uint8_t ring_recv = 0;
 static uint32_t bytes_to_read = 0;
+static uint8_t sqnsrecv_conn_id;
+static uint32_t sqnsrecv_bytes_pending;
 static gsmr_t gsmi_process_sub_cmd(gsm_msg_t* msg, uint8_t* is_ok, uint16_t* is_error);
 
 /**
@@ -974,15 +940,14 @@ gsmi_parse_received(gsm_recv_t* rcv) {
         }
         else if( !strncmp(rcv->data, "+SQNSRECV", 9) )
         {
-        	if(gsmi_parse_rcvdata_ntf(rcv->data))
-        	{
-        		rxDataStage = SQNSRECV_RECEIVED;
-        	}
-        	else
-        	{
-        		rxDataStage = NO_DATA_PENDING;
-        	}
-
+			if(gsmi_parse_rcvdata_ntf(rcv->data, &sqnsrecv_conn_id, &sqnsrecv_bytes_pending))
+			{
+				rxDataStage = SQNSRECV_RECEIVED;
+			}
+			else
+			{
+				rxDataStage = NO_DATA_PENDING;
+			}
         }
 		else if (CMD_IS_CUR(GSM_CMD_SQNSNVW_W) && is_error) {
         	/* At the moment, push a new msg to the produce queue here to retry *
@@ -1295,7 +1260,7 @@ gsmi_parse_received(gsm_recv_t* rcv) {
         	}
         	else if(rxDataStage == SQNSRECV_READ)
         	{
-				gsmi_receive_raw(rcv->data ,gsm.msg->msg.rx_data.connId ,gsm.msg->msg.rx_data.Rxsize);
+				gsmi_receive_raw(rcv->data, sqnsrecv_conn_id, sqnsrecv_bytes_pending);
         		rxDataStage = NO_DATA_PENDING;
         	}
         	else /* NO_DATA_PENDING */
@@ -1327,6 +1292,23 @@ gsmi_parse_received(gsm_recv_t* rcv) {
         }
 #endif
     }
+
+    /* Check if the lib needs to collect data notified by '+SQNSRECV' event
+     * -------------------------------------------------------------------------
+     * The lib cannot get access to the data after '+SQNSRECV' event is received
+     * Therefore, the SQNSRECV_READ stage is here to force the lib to read the data
+     * on the buffer on the next round, when the data is actually available
+     * -------------------------------------------------------------------------
+     */
+    if( rxDataStage == SQNSRECV_RECEIVED )
+    {
+    	rxDataStage = SQNSRECV_READ;
+	}
+	else if(rxDataStage == SQNSRECV_READ)
+	{
+		gsmi_receive_raw(rcv->data, sqnsrecv_conn_id, sqnsrecv_bytes_pending);
+		rxDataStage = NO_DATA_PENDING;
+	}
 
     /*
      * In case of any of these events, simply release semaphore

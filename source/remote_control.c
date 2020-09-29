@@ -604,7 +604,7 @@ void prvShadowMainTask(void *pvParameters)
     }
 }
 
-void vStartLedDemoTask(void)
+void vStartAWSLedDemoTask(void)
 {
     (void)xTaskCreate(prvShadowMainTask, "AWS-RemoteCtrl", DEMO_REMOTE_CONTROL_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY,
                       NULL);

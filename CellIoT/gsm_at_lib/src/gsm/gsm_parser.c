@@ -34,6 +34,8 @@
 #include "gsm_private.h"
 #include "gsm_parser.h"
 #include "gsm_mem.h"
+#include "gsm_utils.h"
+#include "gsm_int.h"
 #include "CellIoT_lib.h"
 #include "math.h"
 
@@ -1047,10 +1049,8 @@ gsmi_parse_rcvdata_update(const char* str)
 	read_count = ( uint32_t ) gsmi_parse_number( (const char**) &ptx);
 
 	/* store pending RX info */
-	CellIoT_lib_socketStoreRXData_Pending_Info( conn_id , read_count );
+	gsm_ring_list_insert_elem(gsm.m.ring_list, read_count, conn_id, -1);
 
-//	ptx++;		/* Skip the , character */
-//	gsmi_receive_raw((const char *)ptx , conn_id , read_count );
     return 1;
 }
 
@@ -1060,8 +1060,9 @@ gsmi_parse_rcvdata_update(const char* str)
  * \return          1 on success, 0 otherwise
  */
 uint8_t
-gsmi_parse_rcvdata_ntf(const char* str)
+gsmi_parse_rcvdata_ntf(const char* str, uint8_t *conn_id, uint32_t *bytes_pending)
 {
+#define SQNSRECV_JUMP	11U
 	uint32_t ret = 0;
 	char * ptx = (char *) str;
 
@@ -1071,12 +1072,15 @@ gsmi_parse_rcvdata_ntf(const char* str)
 	}
 
 	/* Jump directly to the number by skipping '+SQNSRECV: ' */
-	ptx += 11;
+	ptx += SQNSRECV_JUMP;
 
-	gsm.msg->msg.rx_data.connId = ( uint32_t ) gsmi_parse_number( (const char**) &ptx);
-	gsm.msg->msg.rx_data.Rxsize = ( uint32_t ) gsmi_parse_number( (const char**) &ptx);
+	*conn_id = ( uint32_t ) gsmi_parse_number( (const char**) &ptx);
+	*bytes_pending = ( uint32_t ) gsmi_parse_number( (const char**) &ptx);
 
 	ret = 1;
+
+	gsm_ring_list_delete_elem(gsm.m.ring_list, 0);
+	gsm.m.ring_list->is_at_sqnsrecv_ongoing = 0;
 
 	return ret;
 }
@@ -1117,6 +1121,47 @@ gsmi_handle_recv_string(const char * str, uint8_t ring_recv )
 	return read_count;
 }
 
+/**
+ * \brief           Send AT+SQNSRECV when +SQNSRING has been received
+ * \return          1 if Success, 0 otherwise
+ */
+uint32_t
+gsmi_send_sqnsrecv(void)
+{
+	uint32_t status = 0;
+	st_RingElem *element = gsm.m.ring_list->first_ring;
+
+	if(sRXData[element->connid - 1][u8_nextFreeBufferPool].BytesPending == 0)
+	{
+		if( (element->BytesPending << 1) > (AT_BUFFER_SIZE << 1) )
+		{
+			uint32_t bp = element->BytesPending;
+			uint32_t cid = element->connid;
+			uint8_t counter = 0;
+
+			gsm_ring_list_delete_elem(gsm.m.ring_list, 0);
+			while(bp > (AT_BUFFER_SIZE >> 1) )
+			{
+				gsm_ring_list_insert_elem(gsm.m.ring_list, (AT_BUFFER_SIZE >> 1), cid, counter++);
+				bp -= AT_BUFFER_SIZE >> 1;
+			}
+			gsm_ring_list_insert_elem(gsm.m.ring_list, bp, cid, counter++);
+		}
+		AT_PORT_SEND_BEGIN_AT();
+		AT_PORT_SEND_CONST_STR("+SQNSRECV=");
+		gsmi_send_number(GSM_U32(element->connid), 0, 0);
+		gsmi_send_number(GSM_U32(element->BytesPending), 0, 1);
+		AT_PORT_SEND_END_AT();
+
+		/* TODO: Need to implement a timeout
+		 * Here, a timer should start
+		 */
+		gsm.m.ring_list->is_at_sqnsrecv_ongoing = 1;
+		status = 1;
+	}
+
+	return status;
+}
 
 
 #endif /* GSM_SEQUANS_SPECIFIC_CMD */

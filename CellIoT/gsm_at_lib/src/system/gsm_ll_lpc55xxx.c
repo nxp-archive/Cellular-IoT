@@ -44,6 +44,7 @@
 #include "gsm_mem.h"
 #include "gsm_input.h"
 #include "gsm_ll.h"
+#include "gsm_private.h"
 #include "CellIoT_common.h"
 #include "aws_CellIoT.h"
 #include "CellIoT_lib.h"
@@ -51,6 +52,8 @@
 #include "FreeRTOS.h"
 #include "fsl_mrt.h"
 #include "fsl_debug_console.h"
+
+extern uint32_t gsmi_send_sqnsrecv(void);
 
 #if !__DOXYGEN__
 
@@ -99,12 +102,13 @@ usart_ll_thread(void * arg) {
 	BaseType_t evt;
 	uint8_t* mbox_data;
     size_t pos;
+    static TickType_t timeout = portMAX_DELAY;
 
     GSM_UNUSED(arg);
 
     while (1) {
         /* Wait for the event message from DMA or USART */
-        evt = gsm_sys_mbox_get(&usart_ll_mbox_id, (void **)&mbox_data, portMAX_DELAY);
+        evt = gsm_sys_mbox_get(&usart_ll_mbox_id, (void **)&mbox_data, timeout);
 
         if (evt == pdFALSE)
         {
@@ -143,6 +147,22 @@ usart_ll_thread(void * arg) {
             if (old_pos == sizeof(CELLIOTSHIELD_USART_RX_BUFFER)) {
                 old_pos = 0;
             }
+        }
+
+        if ( NULL != gsm.m.ring_list->first_ring)
+        {
+        	timeout = pdMS_TO_TICKS(100);
+        	if(!gsm.m.ring_list->is_at_sqnsrecv_ongoing)
+        	{
+				if(!gsmi_send_sqnsrecv())
+				{
+					configPRINTF(("Couldn't get hold of RX buffer because they are all full...\r\n"));
+				}
+        	}
+        }
+        else
+        {
+			timeout = portMAX_DELAY;
         }
     }
 }

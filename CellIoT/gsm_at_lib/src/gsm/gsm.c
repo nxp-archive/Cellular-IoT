@@ -35,6 +35,7 @@
 #include "gsm_mem.h"
 #include "gsm_threads.h"
 #include "gsm_ll.h"
+#include "gsm_utils.h"
 
 #if GSM_CFG_OS != 1
 #error GSM_CFG_OS must be set to 1!
@@ -146,6 +147,7 @@ gsm_init(gsm_evt_fn evt_func, const uint32_t blocking) {
 #endif /* !GSM_CFG_RESET_ON_INIT */
     gsm_core_unlock();
 
+	gsm.m.ring_list = gsm_ring_list_init();		/* Create ring list */
     gsm.m.conn_val_id = 0;						/* Init the valid connection to 0 */
 
     return res;

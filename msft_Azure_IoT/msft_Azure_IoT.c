@@ -288,4 +288,14 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
 
 }
 
+void vStartAzureLedDemoTask( void )
+{
+    ( void ) xTaskCreate( prvmcsft_Azure_TwinTask,
+                          "Microsoft Azure Twin Task",
+						  AzureTwin_DemoUPDATE_TASK_STACK_SIZE,
+                          NULL,
+                          tskIDLE_PRIORITY,
+                          NULL );
+}
+
 #endif /* MSFT_AZURE_C_ */

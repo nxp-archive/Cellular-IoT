@@ -42,6 +42,7 @@ extern "C" {
 #include "gsm_typedefs.h"
 #include "gsm_debug.h"
 #include "gsm_mem.h"
+#include "gsm_utils.h"
 
 /**
  * \addtogroup      GSM_TYPEDEFS
@@ -754,6 +755,7 @@ typedef struct {
 #if GSM_CFG_CALL || __DOXYGEN__
     gsm_call_t          call;                   /*!< Call information */
 #endif /* GSM_CFG_CALL || __DOXYGEN__ */
+    st_NewRingList *    ring_list;
 } gsm_modules_t;
 
 /**

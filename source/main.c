@@ -34,6 +34,7 @@
 #include "fsl_debug_console.h"
 #include "ksdk_mbedtls.h"
 #include "pin_mux.h"
+#include "fsl_power.h"
 
 /* FreeRTOS Demo Includes */
 #include "FreeRTOS.h"
@@ -51,15 +52,15 @@
 #include "fsl_mma.h"
 #endif
 
-#include "aws_clientcredential.h"
 #include "aws_CellIoT.h"
 #include "clock_config.h"
 #include "CellIoT_lib.h"
 #include "gsm_init.h"
 #include "gsm_includes.h"
 
+#ifdef USE_AZURE_CLOUD
 #include "msft_Azure_IoT.h"
-#include "fsl_power.h"
+#endif
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -104,7 +105,9 @@ uint8_t g_accelResolution = 0;
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
-extern void vStartLedDemoTask(void);
+#ifdef USE_AWS_CLOUD
+extern void vStartAWSLedDemoTask(void);
+#endif
 extern int initNetwork(void);
 
 /*******************************************************************************
@@ -276,16 +279,6 @@ status_t init_mag_accel(uint8_t *accelDataScale, uint8_t *accelResolution)
 }
 #endif
 
-void vStart_mcsft_Azure_TwinTask( void )
-{
-    ( void ) xTaskCreate( prvmcsft_Azure_TwinTask,
-                          "Microsoft Azure Twin Task",
-						  AzureTwin_DemoUPDATE_TASK_STACK_SIZE,
-                          NULL,
-                          tskIDLE_PRIORITY,
-                          NULL );
-}
-
 void vApplicationDaemonTaskStartupHook(void)
 {
     /* A simple example to demonstrate key and certificate provisioning in
@@ -309,9 +302,9 @@ void vApplicationDaemonTaskStartupHook(void)
         else
         {
 #if defined(USE_AWS_CLOUD)
-            vStartLedDemoTask();
+            vStartAWSLedDemoTask();
 #elif defined(USE_AZURE_CLOUD)
-            vStart_mcsft_Azure_TwinTask();
+            vStartAzureLedDemoTask();
 #endif
         }
     }

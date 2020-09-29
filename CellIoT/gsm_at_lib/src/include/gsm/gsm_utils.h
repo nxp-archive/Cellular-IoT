@@ -239,8 +239,25 @@ extern "C" {
  */
 #define gsm_i8_to_str(num, out)             gsm_i32_to_gen_str(GSM_I32(GSM_I8(num)), (out))
 
-char *      gsm_u32_to_gen_str(uint32_t num, char* out, uint8_t is_hex, uint8_t padding);
-char *      gsm_i32_to_gen_str(int32_t num, char* out);
+
+typedef struct _st_ringelem
+{
+	uint32_t BytesPending;					/*!< Number of Bytes pending to be read by the Application */
+	uint32_t connid;						/*!< Connection ID of the received message */
+	struct _st_ringelem * next_ring;				/*!< Next Ring elem in the list */
+} st_RingElem;
+
+typedef struct _st_rewringlist
+{
+	struct _st_ringelem * first_ring;				/*!< First Ring elem in the list */
+	uint8_t is_at_sqnsrecv_ongoing;			/*!< Keep in trace if 'AT+SQNSRECV' has been sent or not */
+} st_NewRingList;
+
+char *      		gsm_u32_to_gen_str(uint32_t num, char* out, uint8_t is_hex, uint8_t padding);
+char *      		gsm_i32_to_gen_str(int32_t num, char* out);
+st_NewRingList * 	gsm_ring_list_init(void);
+void 				gsm_ring_list_insert_elem(st_NewRingList *list, uint32_t byte_pending, uint32_t conn_id, int8_t pos);
+void 				gsm_ring_list_delete_elem(st_NewRingList *list, int8_t pos);
 
 /**
  * \}

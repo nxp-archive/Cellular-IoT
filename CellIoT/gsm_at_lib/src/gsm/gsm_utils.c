@@ -33,6 +33,7 @@
  */
 #include "gsm_private.h"
 #include "gsm_utils.h"
+#include "gsm_mem.h"
 #include <stdint.h>
 
 /**
@@ -109,5 +110,133 @@ gsm_i32_to_gen_str(int32_t num, char* out) {
         return gsm_u32_to_gen_str(GSM_U32(-num), out, 0, 0) - 1;
     } else {
         return gsm_u32_to_gen_str(GSM_U32(num), out, 0, 0);
+    }
+}
+
+/**
+ * \brief           Create a list to keep trace of the '+SRQNSRING' received
+ * \return          Pointer to the list that keep trace of the '+SRQNSRING' received
+ */
+st_NewRingList * gsm_ring_list_init(void)
+{
+	st_NewRingList *list = malloc(sizeof(st_NewRingList));
+
+    if (list == NULL)
+    {
+        exit(EXIT_FAILURE);
+    }
+    list->first_ring = NULL;
+    list->is_at_sqnsrecv_ongoing = 0;
+
+    return list;
+}
+
+/**
+ * \brief           Insert a new ring elem in the list at a given position
+ * \param[in]       list: list that keep trace of the '+SRQNSRING' received
+ * \param[in]       byte_pending: byte pending to read given by the ring event
+ * \param[in]       conn_id: connection id given by the ring event
+ * \param[in]       pos: position of the new elem in the list (0=top/-1=bottom/[1-..]specified position)
+ * \return          void
+ */
+void gsm_ring_list_insert_elem(st_NewRingList *list, uint32_t byte_pending, uint32_t conn_id, int8_t pos)
+{
+    /* generation of a new element */
+	st_RingElem *new = malloc(sizeof(st_RingElem));
+
+    if (list == NULL || new == NULL)
+    {
+        exit(EXIT_FAILURE);
+    }
+    new->BytesPending = byte_pending;
+    new->connid = conn_id;
+
+    /* Insertion of the new elem in the list */
+    if (0 == pos)
+    {
+    	/* Insert the elem at the top of the list */
+    	new->next_ring = list->first_ring;
+    	list->first_ring = new;
+    }
+    else
+	{
+		/* Insert the elem at a given position in the list */
+		st_RingElem *cur_elem = list->first_ring;
+    	st_RingElem *prev_elem = NULL;
+		uint8_t unsigned_pos = (uint8_t)pos, cnt = 0;
+
+		/* Check if at least one elem is in the list */
+		if (NULL == cur_elem)
+		{
+			list->first_ring = new;		/* No elem in the list so add one */
+			new->next_ring = NULL;
+		}
+		else
+		{
+			while( cur_elem->next_ring != NULL && cnt < unsigned_pos )
+			{
+				prev_elem = cur_elem;
+				cur_elem = cur_elem->next_ring;
+			}
+
+			if (cur_elem->next_ring == NULL)
+			{
+				cur_elem->next_ring = new;
+				new->next_ring = NULL;
+			}
+			else
+			{
+				prev_elem->next_ring = new;
+				new->next_ring = cur_elem;
+			}
+		}
+	}
+}
+
+/**
+ * \brief           Delete a ring elem in the list at a given position
+ * \param[in]       list: list that keep trace of the '+SRQNSRING' received
+ * \param[in]       pos: position of the elem in the list (0=top/-1=bottom)
+ * \return          void
+ */
+void gsm_ring_list_delete_elem(st_NewRingList *list, int8_t pos)
+{
+    if (list == NULL)
+    {
+        exit(EXIT_FAILURE);
+    }
+
+    /* Supression of the elem in the list */
+    if (!pos)
+    {
+    	if(list->first_ring != NULL)
+    	{
+    		/* Delete the elem at the top of the list */
+    		st_RingElem *del_elem = list->first_ring;
+			list->first_ring = del_elem->next_ring;
+			free(del_elem);
+    	}
+    }
+    else
+    {
+    	/* Delete the elem at the bottom of the list */
+    	st_RingElem *cur_elem = list->first_ring;
+    	st_RingElem *prev_elem = NULL;
+
+    	while( cur_elem->next_ring != NULL )
+    	{
+    		prev_elem = cur_elem;
+    		cur_elem = cur_elem->next_ring;
+    	}
+
+		free(cur_elem);
+		if (prev_elem != NULL)
+		{
+			prev_elem->next_ring = NULL;
+		}
+		else
+		{
+			list->first_ring = NULL;
+		}
     }
 }

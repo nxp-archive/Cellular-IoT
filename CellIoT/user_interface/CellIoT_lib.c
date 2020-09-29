@@ -14,17 +14,10 @@
 #include "fsl_debug_console.h"
 #endif
 
-#define PREPARED_BUFF_SIZE 32
-
-volatile bool  gm01q_EchoModeActivated = false;
-
-uint8_t g_rxRingBuffer[AT_BUFFER_SIZE] = {0}; /* RX ring buffer. */
-
 uint8_t g_txBuffer[AT_BUFFER_SIZE] = {0};
 uint8_t g_rxBuffer_1[AT_BUFFER_SIZE] = {0};
 uint8_t g_rxBuffer_2[AT_BUFFER_SIZE] = {0};
 
-st_RingList RingList[BUFFER_POLLS_NB*2];
 st_RXData sRXData[GSM_CFG_MAX_CONNS][BUFFER_POLLS_NB] = {
 											{
 												{	.BytesPending = 0,
@@ -163,9 +156,6 @@ st_RXData sRXData[GSM_CFG_MAX_CONNS][BUFFER_POLLS_NB] = {
 uint8_t u8_nextFreeBufferPool = 0;				/*!< Variable that hold the next buffer structure where data can be stored */
 uint8_t u8_nextBufferPoolForData = 0;			/*!< Variable that hold the 1st buffer structure where data is available to read */
 
-uint8_t u8_nxtRngToHandle= 0;					/*!< Variable to hold the next +SNQSRING to be handled */
-uint8_t u8_nxtFreeRngindex= 0;					/*!< Variable to hold the next free +SNQSRING index */
-
 /**
  * \brief           Write a Certificate or a private Key in Non-Volatile Memory
  * \param[in]       certkey: Access to the certificate or private key
@@ -297,34 +287,17 @@ CellIoT_lib_socketSend( uint8_t connId, const unsigned char * pTX , uint32_t sTx
  * \param[in]       connId: Connection ID, must be between 1 and GSM_CFG_MAX_CONNS
  * \return          \ref gsmOK on success, member of \ref gsmr_t enumeration otherwise
  */
-uint32_t
-CellIoT_lib_socketRecv( uint8_t connId )
+gsmr_t
+CellIoT_lib_socketRecv( uint8_t connId, uint32_t bytes_pending )
 {
-	uint8_t ret =  gsmERR;
+	GSM_MSG_VAR_DEFINE(msg);
 
-	/* Check if data is waiting to be read because +SQNSRING has been received */
-	if(RingList[u8_nxtRngToHandle].BytesPending)
-	{
-		GSM_MSG_VAR_DEFINE(msg);
+	GSM_MSG_VAR_ALLOC(msg, 1);// blocking
+	GSM_MSG_VAR_REF(msg).cmd_def = GSM_CMD_SQNS_RECV;
+	GSM_MSG_VAR_REF(msg).msg.rx_data.connId = connId;
+	GSM_MSG_VAR_REF(msg).msg.rx_data.Rxsize = bytes_pending;
 
-		GSM_MSG_VAR_ALLOC(msg, 1);// blocking
-		GSM_MSG_VAR_REF(msg).cmd_def = GSM_CMD_SQNS_RECV;
-		GSM_MSG_VAR_REF(msg).msg.rx_data.connId = connId;
-		GSM_MSG_VAR_REF(msg).msg.rx_data.Rxsize = RingList[u8_nxtRngToHandle].BytesPending;
-
-		ret = gsmi_send_msg_to_producer_mbox(&GSM_MSG_VAR_REF(msg), gsmi_initiate_cmd, 60000);
-
-		/* Clear the data before moving to the next index */
-		RingList[u8_nxtRngToHandle].connid = 0;
-		RingList[u8_nxtRngToHandle].BytesPending = 0;
-		u8_nxtRngToHandle == (BUFFER_POLLS_NB * 2) - 1 ? u8_nxtRngToHandle = 0 : u8_nxtRngToHandle++;
-	}
-	else
-	{
-		ret = gsmERR;		/* No data pending */
-	}
-
-    return ret;
+    return gsmi_send_msg_to_producer_mbox(&GSM_MSG_VAR_REF(msg), gsmi_initiate_cmd, 60000);
 }
 
 
@@ -339,13 +312,6 @@ uint32_t
 CellIoT_lib_socketReadData( uint8_t connId, unsigned char * pRX , uint16_t rcvlen )
 {
 	uint32_t ret = 0;
-	/* Check if data needs to be read because +SQNSRING occurred
-	 * The while loop also needs to check that there is a free sRXData buffer to receive the data
-	 */
-	while( u8_nxtRngToHandle != u8_nxtFreeRngindex && sRXData[connId - 1][u8_nextFreeBufferPool].BytesPending == 0 )
-	{
-		(uint32_t) CellIoT_lib_socketRecv(connId);
-	}
 
 	/* If no bytes to read, just return 0 to simulate a time out */
 	if( sRXData[connId - 1][u8_nextBufferPoolForData].BytesPending == 0 )
@@ -392,27 +358,6 @@ CellIoT_lib_socketReadData( uint8_t connId, unsigned char * pRX , uint16_t rcvle
 	}
 
     return ret;
-}
-
-
-/**
- * \brief           Save the data received with +SQNSRING in the RingList the next read
- * \param[in]       connId: Connection ID, must be between 1 and GSM_CFG_MAX_CONNS
- * \param[in]		BP: Number of Bytes Pending to be read
- * \return          \ref gsmOK on success, member of \ref gsmr_t enumeration otherwise
- */
-#include "task.h"
-void
-CellIoT_lib_socketStoreRXData_Pending_Info( uint32_t connId, uint32_t BP )
-{
-	taskENTER_CRITICAL();
-
-	RingList[u8_nxtFreeRngindex].connid = connId;
-	RingList[u8_nxtFreeRngindex].BytesPending = BP;
-
-	u8_nxtFreeRngindex == (BUFFER_POLLS_NB * 2) - 1 ? u8_nxtFreeRngindex = 0 : u8_nxtFreeRngindex++;
-
-	taskEXIT_CRITICAL();
 }
 
 
