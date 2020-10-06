@@ -18,6 +18,7 @@
 #include "msft_Azure_IoT.h"
 #include "msft_Azure_IoT_clientcredential.h"
 #include "iot_mqtt_agent.h"
+#include "iot_mqtt_types.h"
 #include "event_groups.h"
 #include "board.h"
 
@@ -47,6 +48,7 @@ typedef enum AZURE_TWIN_TASK_ST
 
 static MQTTAgentConnectParams_t xConnectParams;
 const MQTTAgentConnectParams_t * pConnectParams = &xConnectParams;
+MQTTAgentHandle_t xMQTTHandle;
 
 static Azure_TW_Task enAzure_TW_Task;
 static MQTTAgentSubscribeParams_t xSubscribeParams;
@@ -123,6 +125,12 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
 
     ( void ) pvParameters;
 
+    if( MQTT_AGENT_Create( &xMQTTHandle ) != eMQTTAgentSuccess )
+    {
+        configPRINTF(("Failed to initialize the MQTT Handle, stopping demo.\r\n"));
+        vTaskDelete(NULL);
+    }
+
     memset( &xConnectParams, 0x00, sizeof( xConnectParams ) );
     xConnectParams.pcURL = clientcredentialAZURE_MQTT_BROKER_ENDPOINT;
     xConnectParams.usPort = clientcredentialAZURE_MQTT_BROKER_PORT;
@@ -144,7 +152,6 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
 //    xCloudServiceHandle.xSlot = 1;
 //    xCloudServiceHandle.eCldSrv = Azure_Service;
 
-
     enAzure_TW_Task = AZURE_TW_IDLE;
 
     xCreatedEventGroup = xEventGroupCreate();
@@ -160,7 +167,7 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
     	{
     		case AZURE_TW_IDLE:
 
-    		    xMQTTReturn = MQTT_AGENT_Connect( ( MQTTAgentHandle_t) Broker_Num,
+    		    xMQTTReturn = MQTT_AGENT_Connect( &xMQTTHandle,
     		    								  pConnectParams,
     											  AzureTwinDemoTIMEOUT);
 

@@ -16,7 +16,7 @@
 #include "FreeRTOSConfig.h"
 #include "fsl_debug_console.h"
 /* Stack size for task that handles shadow delta and updates. */
-#define AzureTwin_DemoUPDATE_TASK_STACK_SIZE     ( ( uint16_t ) configMINIMAL_STACK_SIZE * ( uint16_t ) 5 )
+#define AzureTwin_DemoUPDATE_TASK_STACK_SIZE     ( ( uint16_t ) configMINIMAL_STACK_SIZE * ( uint16_t ) 20 )
 
 /* Create the shadow demo main task which will act as a client application to
  * request periodic change in state (color) of light bulb.  */

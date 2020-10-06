@@ -40,7 +40,7 @@
 /* Logging includes. */
 //#include "iot_logging_task.h"
 
-/* Third-party wifi driver include. */
+/* Third-party Cellular-IoT driver include. */
 #include "gsm_includes.h"
 #include "gsm_private.h"
 #include "CellIoT_lib.h"

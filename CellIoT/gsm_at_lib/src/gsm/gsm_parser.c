@@ -1048,8 +1048,26 @@ gsmi_parse_rcvdata_update(const char* str)
 	conn_id = ( uint32_t ) gsmi_parse_number( (const char**) &ptx);
 	read_count = ( uint32_t ) gsmi_parse_number( (const char**) &ptx);
 
-	/* store pending RX info */
-	gsm_ring_list_insert_elem(gsm.m.ring_list, read_count, conn_id, -1);
+	/* store pending data info */
+	if( (read_count << 1) > (AT_BUFFER_SIZE << 1) )
+	{
+		uint32_t bp = read_count;
+		uint32_t cid = conn_id;
+		uint8_t counter = 0;
+
+		//gsm_ring_list_delete_elem(gsm.m.ring_list, 0);
+		while(bp > (AT_BUFFER_SIZE >> 1) )
+		{
+			gsm_ring_list_insert_elem(gsm.m.ring_list, (AT_BUFFER_SIZE >> 1), cid, -1);
+			bp -= AT_BUFFER_SIZE >> 1;
+		}
+		gsm_ring_list_insert_elem(gsm.m.ring_list, bp, cid, -1);
+	}
+	else
+	{
+		gsm_ring_list_insert_elem(gsm.m.ring_list, read_count, conn_id, -1);
+	}
+
 
     return 1;
 }
@@ -1133,20 +1151,6 @@ gsmi_send_sqnsrecv(void)
 
 	if(sRXData[element->connid - 1][u8_nextFreeBufferPool].BytesPending == 0)
 	{
-		if( (element->BytesPending << 1) > (AT_BUFFER_SIZE << 1) )
-		{
-			uint32_t bp = element->BytesPending;
-			uint32_t cid = element->connid;
-			uint8_t counter = 0;
-
-			gsm_ring_list_delete_elem(gsm.m.ring_list, 0);
-			while(bp > (AT_BUFFER_SIZE >> 1) )
-			{
-				gsm_ring_list_insert_elem(gsm.m.ring_list, (AT_BUFFER_SIZE >> 1), cid, counter++);
-				bp -= AT_BUFFER_SIZE >> 1;
-			}
-			gsm_ring_list_insert_elem(gsm.m.ring_list, bp, cid, counter++);
-		}
 		AT_PORT_SEND_BEGIN_AT();
 		AT_PORT_SEND_CONST_STR("+SQNSRECV=");
 		gsmi_send_number(GSM_U32(element->connid), 0, 0);
