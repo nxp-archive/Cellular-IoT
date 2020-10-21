@@ -869,6 +869,7 @@
 									<listOptionValue builtIn="false" value="__MULTICORE_MASTER"/>
 									<listOptionValue builtIn="false" value="USE_AZURE_CLOUD"/>
 									<listOptionValue builtIn="false" value="DBG_ON_CELLULAR_MODULE"/>
+									<listOptionValue builtIn="false" value="SSS_USE_FTR_FILE"/>
 								</option>
 								<option id="com.crt.advproject.gcc.fpu.181782211" name="Floating point" superClass="com.crt.advproject.gcc.fpu" useByScannerDiscovery="false" value="com.crt.advproject.gcc.fpu.fpv5sp.hard" valueType="enumerated"/>
 								<option id="com.crt.advproject.gcc.thumb.206543675" name="Thumb mode" superClass="com.crt.advproject.gcc.thumb" useByScannerDiscovery="false" value="true" valueType="boolean"/>
