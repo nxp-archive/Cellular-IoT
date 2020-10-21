@@ -115,6 +115,7 @@ typedef struct _networkConnection IotNetworkConnectionAfr_t;
  * @note This initializer may change at any time in future versions, but its
  * name will remain the same.
  */
+#if defined(USE_AWS_CLOUD)
 #define AWS_IOT_NETWORK_CREDENTIALS_AFR_INITIALIZER            \
     {                                                          \
         .pAlpnProtos = socketsAWS_IOT_ALPN_MQTT,               \
@@ -127,7 +128,20 @@ typedef struct _networkConnection IotNetworkConnectionAfr_t;
         .pPrivateKey = keyCLIENT_PRIVATE_KEY_PEM,              \
         .privateKeySize = sizeof( keyCLIENT_PRIVATE_KEY_PEM )  \
     }
-
+#elif defined(USE_AZURE_CLOUD)
+#define AWS_IOT_NETWORK_CREDENTIALS_AFR_INITIALIZER            \
+    {                                                          \
+        .pAlpnProtos = NULL,                                   \
+        .maxFragmentLength = 0,                                \
+        .disableSni = false,                                   \
+        .pRootCa = NULL,                                       \
+        .rootCaSize = 0,                                       \
+        .pClientCert = keyCLIENT_CERTIFICATE_PEM,              \
+        .clientCertSize = sizeof( keyCLIENT_CERTIFICATE_PEM ), \
+        .pPrivateKey = keyCLIENT_PRIVATE_KEY_PEM,              \
+        .privateKeySize = sizeof( keyCLIENT_PRIVATE_KEY_PEM )  \
+    }
+#endif
 /**
  * @brief Provides a pointer to an #IotNetworkInterface_t that uses the functions
  * declared in this file.

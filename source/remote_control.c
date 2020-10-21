@@ -493,7 +493,7 @@ void prvShadowMainTask(void *pvParameters)
     /* Delete the device shadow before initial update */
     xReturn = SHADOW_Delete(xClientHandle, &xOperationParams, shadowDemoTIMEOUT);
 
-    /* Atttempting to delete a non-existant shadow returns eShadowRejectedNotFound.
+    /* Attempting to delete a non-existant shadow returns eShadowRejectedNotFound.
      * Either eShadowSuccess or eShadowRejectedNotFound signify that there's no
      * existing Thing Shadow, so both values are ok. */
     if ((xReturn != eShadowSuccess) && (xReturn != eShadowRejectedNotFound))

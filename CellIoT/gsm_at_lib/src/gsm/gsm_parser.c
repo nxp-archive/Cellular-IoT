@@ -1053,9 +1053,7 @@ gsmi_parse_rcvdata_update(const char* str)
 	{
 		uint32_t bp = read_count;
 		uint32_t cid = conn_id;
-		uint8_t counter = 0;
 
-		//gsm_ring_list_delete_elem(gsm.m.ring_list, 0);
 		while(bp > (AT_BUFFER_SIZE >> 1) )
 		{
 			gsm_ring_list_insert_elem(gsm.m.ring_list, (AT_BUFFER_SIZE >> 1), cid, -1);

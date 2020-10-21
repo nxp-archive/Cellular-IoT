@@ -24,7 +24,7 @@
  */
 
 #if defined(SSS_USE_FTR_FILE)
-#include "fsl_sss_ftr.h"
+//#include "fsl_sss_ftr.h"
 #endif
 
 /* FreeRTOS includes. */

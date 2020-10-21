@@ -137,22 +137,19 @@ static BaseType_t prvNetworkSend( void * pvContext,
 
 #else
     /* Send Data using AT commands */
-    if(  CellIoT_lib_socketSend( gsm.m.conn_val_id , pucData , xDataLength ) == gsmOK )
+    if( CellIoT_lib_socketSend( gsm.m.conn_val_id , pucData , xDataLength ) == gsmOK )
     {
+		#ifdef USE_AWS_CLOUD
+    	/* AWS Cloud seems to need a delay here */
     	vTaskDelay(pdMS_TO_TICKS(200));
+		#endif
     	return xDataLength;
     }
     return -1;
 #endif
 
 }
-
-
-
 /*-----------------------------------------------------------*/
-
-
-
 
 /*
  * @brief Network receive callback.
@@ -162,15 +159,13 @@ static BaseType_t prvNetworkRecv( void * pvContext,
                                   size_t xReceiveLength )
 {
     SSOCKETContextPtr_t pxContext = ( SSOCKETContextPtr_t ) pvContext;
+    int xRetVal = 0;
 
     /* Do not receive data on unconnected socket */
     if( !( pxContext->ulState & nxpsecuresocketsSOCKET_CONNECTED_FLAG ) )
     {
         return -1;
     }
-
-
-    int xRetVal = 0;
 
     /* implement AT command to receive */
     uint32_t i = 0;

@@ -21,6 +21,8 @@
 #include "iot_mqtt_types.h"
 #include "event_groups.h"
 #include "board.h"
+#include "iot_init.h"
+#include "azure_default_root_certificates.h"
 
 /* Maximum amount of time a Shadow function call may block. */
 #define AzureTwinDemoTIMEOUT                    pdMS_TO_TICKS( 30000UL )
@@ -117,7 +119,7 @@ MQTTBool_t Twin_Operations_CallBack(void * pvPublishCallbackContext,
 void prvmcsft_Azure_TwinTask( void * pvParameters )
 {
 	MQTTAgentReturnCode_t xMQTTReturn;
-	UBaseType_t Broker_Num = 1 ;
+	//UBaseType_t Broker_Num = 1 ;
 	char cPayload[100];
 	char cTopic[50];
 	uint8_t Req_Id =1;
@@ -125,41 +127,43 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
 
     ( void ) pvParameters;
 
+    /* Initialize common libraries required by demo. */
+	if (IotSdk_Init() != true)
+	{
+		configPRINTF(("Failed to initialize the common library."));
+		vTaskDelete(NULL);
+	}
+
     if( MQTT_AGENT_Create( &xMQTTHandle ) != eMQTTAgentSuccess )
     {
         configPRINTF(("Failed to initialize the MQTT Handle, stopping demo.\r\n"));
         vTaskDelete(NULL);
     }
 
+    MQTT_AGENT_Init();
+
     memset( &xConnectParams, 0x00, sizeof( xConnectParams ) );
     xConnectParams.pcURL = clientcredentialAZURE_MQTT_BROKER_ENDPOINT;
     xConnectParams.usPort = clientcredentialAZURE_MQTT_BROKER_PORT;
 
     xConnectParams.xFlags = mqttagentREQUIRE_TLS;
-    xConnectParams.pcCertificate = NULL;
-    xConnectParams.ulCertificateSize = 0;
+    xConnectParams.pcCertificate = (char *)AZURE_SERVER_ROOT_CERTIFICATE_PEM;
+    xConnectParams.ulCertificateSize = sizeof(AZURE_SERVER_ROOT_CERTIFICATE_PEM);
     xConnectParams.pxCallback = NULL;
     xConnectParams.pvUserData = NULL;
 
     xConnectParams.pucClientId = (const uint8_t *)(clientcredentialAZURE_IOT_THING_NAME);
     xConnectParams.usClientIdLength = (uint16_t)strlen(clientcredentialAZURE_IOT_THING_NAME);
 #if SSS_USE_FTR_FILE
-    xConnectParams.cUserName = AZURE_IOT_MQTT_USERNAME;
-    xConnectParams.uUsernamelength = ( uint16_t ) strlen(AZURE_IOT_MQTT_USERNAME);
+    xConnectParams.cUserName = clientcredentialAZURE_IOT_MQTT_USERNAME;
+    xConnectParams.uUsernamelength = ( uint16_t ) strlen(clientcredentialAZURE_IOT_MQTT_USERNAME);
     xConnectParams.p_password = NULL ;
     xConnectParams.passwordlength = 0;
 #endif
-//    xCloudServiceHandle.xSlot = 1;
-//    xCloudServiceHandle.eCldSrv = Azure_Service;
 
     enAzure_TW_Task = AZURE_TW_IDLE;
 
     xCreatedEventGroup = xEventGroupCreate();
-//    OCOTP_ReloadShadowRegister(OCOTP);
-//    Temp = OCOTP_ReadFuseShadowRegister( OCOTP , 0x0E );
-//    Hot_Temp = ((Temp >> 8) & 0xfff);
-//    Room_Temp = ((Temp >> 20 ) & 0xfff);
-//    Temp_Coeff = (Hot_Temp - Room_Temp);
 
     while( 1 )
     {
@@ -167,7 +171,7 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
     	{
     		case AZURE_TW_IDLE:
 
-    		    xMQTTReturn = MQTT_AGENT_Connect( &xMQTTHandle,
+    		    xMQTTReturn = MQTT_AGENT_Connect( xMQTTHandle,
     		    								  pConnectParams,
     											  AzureTwinDemoTIMEOUT);
 
@@ -190,11 +194,19 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
     		    xUnsubscribeParams.pucTopic = (const uint8_t *)AZURE_OPERATION_RESPONSE_TOPIC;
     		    xUnsubscribeParams.usTopicLength = sizeof(AZURE_OPERATION_RESPONSE_TOPIC) - 1;
 
-    		    if( MQTT_AGENT_Subscribe((MQTTAgentHandle_t) Broker_Num, &xSubscribeParams, pdMS_TO_TICKS(10000)) == eMQTTAgentSuccess)
+    		    if( MQTT_AGENT_Subscribe(xMQTTHandle, &xSubscribeParams, pdMS_TO_TICKS(10000)) == eMQTTAgentSuccess)
     		    {
     		    	AZUREDEBUG_PRINTF( ("Successfully Subscribe to Operations Topic\r\n") );
+    		    	enAzure_TW_Task = AZURE_TW_SET_STATE;
     		    }
-    			enAzure_TW_Task = AZURE_TW_SET_STATE;
+                else
+                {
+                	AZUREDEBUG_PRINTF( ("Unsuccessfully Subscribe to Operations Topic\r\n"));
+                	AZUREDEBUG_PRINTF( ("Disconnect\r\n"));
+                	MQTT_AGENT_Disconnect(xMQTTHandle, AzureTwinDemoTIMEOUT);
+                	enAzure_TW_Task = AZURE_TW_IDLE;
+                }
+
     			break;
 
     		case AZURE_TW_SET_STATE:
@@ -217,7 +229,7 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
                 xPublishParameters.ulDataLength = strlen(cPayload);
                 xPublishParameters.xQoS = eMQTTQoS0;
 
-                if( MQTT_AGENT_Publish(( MQTTAgentHandle_t) Broker_Num, &xPublishParameters, pdMS_TO_TICKS(30000)) == eMQTTAgentSuccess )
+                if( MQTT_AGENT_Publish(xMQTTHandle, &xPublishParameters, pdMS_TO_TICKS(30000)) == eMQTTAgentSuccess )
                 {
                 	AZUREDEBUG_PRINTF( ("Successfully Publish to SET Topic\r\n"));
                     enAzure_TW_Task = AZURE_TW_WAIT_SET_RESP;
@@ -226,7 +238,7 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
                 {
                 	AZUREDEBUG_PRINTF( ("Unsuccessfully Publish to SET Topic\r\n"));
                 	AZUREDEBUG_PRINTF( ("Disconnect\r\n"));
-                	MQTT_AGENT_Disconnect(( MQTTAgentHandle_t) Broker_Num, AzureTwinDemoTIMEOUT);
+                	MQTT_AGENT_Disconnect(xMQTTHandle, AzureTwinDemoTIMEOUT);
                 	enAzure_TW_Task = AZURE_TW_IDLE;
                 }
 
@@ -256,7 +268,7 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
                 xPublishParameters.usTopicLength = (uint16_t)strlen((const char *)xPublishParameters.pucTopic);
                 xPublishParameters.ulDataLength = 3;
                 xPublishParameters.xQoS = eMQTTQoS0;
-                if( MQTT_AGENT_Publish(( MQTTAgentHandle_t) Broker_Num, &xPublishParameters, pdMS_TO_TICKS(30000)) == eMQTTAgentSuccess )
+                if( MQTT_AGENT_Publish(xMQTTHandle, &xPublishParameters, pdMS_TO_TICKS(30000)) == eMQTTAgentSuccess )
                 {
                 	AZUREDEBUG_PRINTF( ("Successfully Publish to GET Topic\r\n"));
                     enAzure_TW_Task = AZURE_TW_WAIT_GET_RESP;
@@ -265,7 +277,7 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
                 {
                 	AZUREDEBUG_PRINTF( ("Unsuccessfully Publish to GET Topic\r\n"));
                 	AZUREDEBUG_PRINTF( ("Disconnect\r\n"));
-                	MQTT_AGENT_Disconnect(( MQTTAgentHandle_t) Broker_Num, AzureTwinDemoTIMEOUT);
+                	MQTT_AGENT_Disconnect(xMQTTHandle, AzureTwinDemoTIMEOUT);
                 	enAzure_TW_Task = AZURE_TW_IDLE;
                 }
 
