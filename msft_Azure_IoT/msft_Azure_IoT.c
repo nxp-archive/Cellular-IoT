@@ -215,8 +215,8 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
     xConnectParams.pxCallback = NULL;
     xConnectParams.pvUserData = NULL;
 
-    xConnectParams.pucClientId = (const uint8_t *)(clientcredentialAZURE_IOT_THING_NAME);
-    xConnectParams.usClientIdLength = (uint16_t)strlen(clientcredentialAZURE_IOT_THING_NAME);
+    xConnectParams.pucClientId = (const uint8_t *)(clientcredentialAZURE_IOT_DEVICE_ID);
+    xConnectParams.usClientIdLength = (uint16_t)strlen(clientcredentialAZURE_IOT_DEVICE_ID);
 #if SSS_USE_FTR_FILE
     xConnectParams.cUserName = clientcredentialAZURE_IOT_MQTT_USERNAME;
     xConnectParams.uUsernamelength = ( uint16_t ) strlen(clientcredentialAZURE_IOT_MQTT_USERNAME);

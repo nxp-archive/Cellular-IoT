@@ -89,16 +89,16 @@ void generate_sas_token(char * buffer, size_t bufferSize)
 	size_t expires = getNow() + EXPIRES * 2;
 
 	/* Convert the Device ID for URL use */
-	size_t device_id_length = strlen(clientcredentialAZURE_IOT_THING_NAME);
+	size_t device_id_length = strlen(clientcredentialAZURE_IOT_DEVICE_ID);
 	char * device_id = NULL;
-	urlEncode(clientcredentialAZURE_IOT_THING_NAME, device_id_length, &device_id);
+	urlEncode(clientcredentialAZURE_IOT_DEVICE_ID, device_id_length, &device_id);
 
 	/* Create the URL-encoded ressource URI */
 	char * sr = (char*) AZURE_IOTC_MALLOC(BUFFER_SIZE_256);
 	assert(sr != NULL);
 	size_t size =
 	  snprintf(sr, BUFFER_SIZE_256, "%s%%2Fregistrations%%2F%s",
-			  clientcredentialAZURE_IOT_SCOPE_ID, clientcredentialAZURE_IOT_THING_NAME);
+			  clientcredentialAZURE_IOT_SCOPE_ID, clientcredentialAZURE_IOT_DEVICE_ID);
 	assert(size < BUFFER_SIZE_256);
 	AZURE_IOTC_FREE(device_id);
 
