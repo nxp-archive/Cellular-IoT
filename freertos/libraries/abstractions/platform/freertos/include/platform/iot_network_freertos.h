@@ -129,6 +129,7 @@ typedef struct _networkConnection IotNetworkConnectionAfr_t;
         .privateKeySize = sizeof( keyCLIENT_PRIVATE_KEY_PEM )  \
     }
 #elif defined(USE_AZURE_CLOUD)
+#ifndef SAS_KEY
 #define AWS_IOT_NETWORK_CREDENTIALS_AFR_INITIALIZER            \
     {                                                          \
         .pAlpnProtos = NULL,                                   \
@@ -141,6 +142,20 @@ typedef struct _networkConnection IotNetworkConnectionAfr_t;
         .pPrivateKey = keyCLIENT_PRIVATE_KEY_PEM,              \
         .privateKeySize = sizeof( keyCLIENT_PRIVATE_KEY_PEM )  \
     }
+#else
+#define AWS_IOT_NETWORK_CREDENTIALS_AFR_INITIALIZER            	\
+    {                                                          	\
+        .pAlpnProtos = NULL,                                   	\
+        .maxFragmentLength = 0,                                	\
+        .disableSni = false,                                   	\
+        .pRootCa = NULL,                                       	\
+        .rootCaSize = 0,                                       	\
+        .pClientCert = NULL,              						\
+        .clientCertSize = 0, 									\
+        .pPrivateKey = NULL,              						\
+        .privateKeySize = 0  									\
+    }
+#endif
 #endif
 /**
  * @brief Provides a pointer to an #IotNetworkInterface_t that uses the functions

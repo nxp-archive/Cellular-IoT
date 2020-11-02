@@ -21,7 +21,7 @@
 /* Create the shadow demo main task which will act as a client application to
  * request periodic change in state (color) of light bulb.  */
 
-#define AZUREDEBUG_PRINTF(x)		vLoggingPrintf x
+#define AZURE_PRINTF(x)		vLoggingPrintf x
 
 void prvmcsft_Azure_TwinTask( void * pvParameters );
 void vStartAzureLedDemoTask( void );
