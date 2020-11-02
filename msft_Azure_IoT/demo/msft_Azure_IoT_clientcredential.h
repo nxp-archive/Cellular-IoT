@@ -19,7 +19,8 @@
  *
  * @todo Set this to the fully-qualified DNS name of your MQTT broker.
  */
-#define clientcredentialAZURE_MQTT_BROKER_ENDPOINT 	"global.azure-devices-provisioning.net"
+#define clientcredentialAZURE_MQTT_BROKER_ENDPOINT 	     ""
+
 
 #if (AZURE_IOT_BROKER == 2)
 /*
@@ -27,16 +28,15 @@
  *
  * @todo Set this to the Scope ID of your IoT Thing.
  */
-#define clientcredentialAZURE_IOT_SCOPE_ID               "0ne001AEE7B"
+#define clientcredentialAZURE_IOT_SCOPE_ID               ""
 
 #endif
-
 /*
  * @brief Host name.
  *
  * @todo Set this to the unique name of your IoT Thing.
  */
-#define clientcredentialAZURE_IOT_DEVICE_ID               "29w66iriqt5"
+#define clientcredentialAZURE_IOT_THING_NAME             ""
 
 /*
  * @brief UniStream MQTT username.
