@@ -42,4 +42,6 @@
  */
 #define keyCLIENT_PRIVATE_KEY_PEM                   ""
 
+#endif
+
 #endif /* MSFT_AZURE_IOT_CLIENTCREDENTIAL_KEYS_H_ */
