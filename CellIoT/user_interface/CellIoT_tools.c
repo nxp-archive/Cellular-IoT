@@ -28,7 +28,7 @@ int32_t SOCKETS_SetCfg(void)
 
 int32_t SOCKETS_SetSockSecurity(void)
 {
-    return CellIoT_lib_setSocketSecurity(gsm.m.conn_val_id + 1, gsm.m.conn_val_id + 1, 0, NULL, NULL, 1); // taylan
+    return CellIoT_lib_setSocketSecurity(gsm.m.conn_val_id + 1, gsm.m.conn_val_id + 1, 0, NULL, NULL, 1);
 }
 
 int32_t SOCKETS_SetTLSSecurityCfg(void)

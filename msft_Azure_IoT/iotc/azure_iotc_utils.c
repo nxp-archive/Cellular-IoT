@@ -15,8 +15,6 @@
 #include <mbedtls/sha256.h>
 #include <mbedtls/base64.h>
 
-
-#define BUFFER_SIZE_256   256
 static uint32_t EXPIRES = 21600;
 
 unsigned long getNow() {
@@ -57,7 +55,7 @@ bool urlEncode(const char * buffer, size_t length, char ** url_enc_data)
     return true;
 }
 
-bool hash(const char *key_, uint32_t key_length, const char *data, uint32_t data_size, char **hash_data)
+bool hash(const char *key_, uint32_t key_length, const char *data, uint32_t data_size, char **hash_data, size_t* hash_data_length)
 {
 #define LOG_FAIL__(X) if ((res=X)!=0) { AZURE_PRINTF(("Error: hash %s has failed with %d return value.", #X, res)); return false;}
     mbedtls_md_type_t md = MBEDTLS_MD_SHA256;
@@ -79,75 +77,163 @@ bool hash(const char *key_, uint32_t key_length, const char *data, uint32_t data
 
     mbedtls_md_free(&ctx);
 
+    hmac_hash[hash_size] = 0;
     *hash_data = (char *) hmac_hash;
+    *hash_data_length = (size_t) hash_size;
 
     return true;
 }
 
-void generate_sas_token(char * buffer, size_t bufferSize)
+void generateSasToken(char** ptr_buffer, char* scope_id, size_t scope_id_length, char* device_id, size_t device_id_length, char* key, size_t key_length)
 {
-	size_t expires = getNow() + EXPIRES * 2;
+	size_t expires = getNow() + EXPIRES;
 
 	/* Convert the Device ID for URL use */
-	size_t device_id_length = strlen(clientcredentialAZURE_IOT_DEVICE_ID);
-	char * device_id = NULL;
-	urlEncode(clientcredentialAZURE_IOT_DEVICE_ID, device_id_length, &device_id);
+	char * url_device_id = NULL;
+	urlEncode(device_id, device_id_length, &url_device_id);
 
 	/* Create the URL-encoded ressource URI */
 	char * sr = (char*) AZURE_IOTC_MALLOC(BUFFER_SIZE_256);
 	assert(sr != NULL);
 	size_t size =
-	  snprintf(sr, BUFFER_SIZE_256, "%s%%2Fregistrations%%2F%s",
-			  clientcredentialAZURE_IOT_SCOPE_ID, clientcredentialAZURE_IOT_DEVICE_ID);
+	  snprintf(sr, BUFFER_SIZE_256,
+			  "%s%%2Fregistrations%%2F%s",
+			  scope_id, url_device_id);
 	assert(size < BUFFER_SIZE_256);
-	AZURE_IOTC_FREE(device_id);
+	AZURE_IOTC_FREE(url_device_id);
 
 	/* Create data to be signed with the key containing the expiry time */
-	char * stringToSign = (char*) AZURE_IOTC_MALLOC(BUFFER_SIZE_256);
-	assert(stringToSign != NULL);
-	size = snprintf(stringToSign, BUFFER_SIZE_256, "%s\n%lu000", sr, (long unsigned int)expires);
+	char * string_to_sign = (char*) AZURE_IOTC_MALLOC(BUFFER_SIZE_256);
+	assert(string_to_sign != NULL);
+	size = snprintf(string_to_sign, BUFFER_SIZE_256, "%s\n%lu000", sr, (long unsigned int)expires);
 	assert(size < BUFFER_SIZE_256);
 
 	/* Decode the Key */
 	size = 0;
-	size_t key_size = strlen(keyDEVICE_SAS_PRIMARY_KEY);
-	char * key_decoded = (char*) AZURE_IOTC_MALLOC(key_size + 1);
+	char * key_decoded = (char*) AZURE_IOTC_MALLOC(key_length + 1);
 	assert(key_decoded != NULL);
-	mbedtls_base64_decode((unsigned char*)key_decoded, key_size, &size,
-	        (const unsigned char*)keyDEVICE_SAS_PRIMARY_KEY, key_size);
+	mbedtls_base64_decode((unsigned char*)key_decoded, key_length, &size,
+	        (const unsigned char*)key, key_length);
 	assert(size > 0);
-	key_decoded[key_size] = 0;
+	key_decoded[size] = 0;
 
 	/* Hash the data to be signed with the decoded key */
-	char * signedString = NULL;
-	hash(key_decoded, key_size, stringToSign, strlen(stringToSign), &signedString);
-	AZURE_IOTC_FREE(stringToSign);
+	char * signed_string = NULL;
+	size_t signed_string_length = 0;
+	hash(key_decoded, size, string_to_sign, strlen(string_to_sign), &signed_string, &signed_string_length);
+	AZURE_IOTC_FREE(string_to_sign);
 
 	/* Encode the signed data */
 	size = 0;
 	char * data_encoded = (char*) AZURE_IOTC_MALLOC(BUFFER_SIZE_256);
 	assert(data_encoded != NULL);
-	mbedtls_base64_encode((unsigned char*)data_encoded, strlen(signedString) * 3, &size,
-	        (const unsigned char*)signedString, strlen(signedString));
+	mbedtls_base64_encode((unsigned char*)data_encoded, strlen(signed_string) * 3, &size,
+	        (const unsigned char*)signed_string, signed_string_length);
 	assert(size > 0);
-	char * data_encoded_url = NULL;
-	urlEncode(data_encoded, strlen(data_encoded), &data_encoded_url);
+	char * url_data_encoded = NULL;
+	urlEncode(data_encoded, strlen(data_encoded), &url_data_encoded);
 
 	/* Generate the DPS Authentication String */
-	uint32_t outLength = snprintf(buffer, bufferSize,
+	char * buffer = (char*) AZURE_IOTC_MALLOC(BUFFER_SIZE_256);
+	assert(buffer != NULL);
+	size = snprintf(buffer, BUFFER_SIZE_256,
 					   "SharedAccessSignature "
 					   "sr=%s&sig=%s&se=%lu000&skn=registration",
-					   sr, data_encoded_url, (long unsigned int)expires);
-	assert(outLength > 0 && outLength < (unsigned int) bufferSize);
-	buffer[outLength] = 0;
+					   sr, url_data_encoded, (long unsigned int)expires);
+	assert(size > 0 && size < (unsigned int) BUFFER_SIZE_256);
+	buffer[size] = 0;
+
+	*ptr_buffer = buffer;
 
 	/* Free all remaining allocated ressources */
 	AZURE_IOTC_FREE(sr);
 	AZURE_IOTC_FREE(key_decoded);
-	AZURE_IOTC_FREE(signedString);
+	AZURE_IOTC_FREE(signed_string);
 	AZURE_IOTC_FREE(data_encoded);
-	AZURE_IOTC_FREE(data_encoded_url);
+	AZURE_IOTC_FREE(url_data_encoded);
 
+}
+
+void getUsernameAndPassword(char** ptr_username, char** ptr_password, char* device_id, size_t device_id_length, char* host_name, size_t host_name_length, char* key, size_t key_length)
+{
+	size_t expires = getNow() + EXPIRES;
+
+	/* Convert the Assigned Hub for URL use */
+	char * url_host_name = NULL;
+	urlEncode(host_name, host_name_length, &url_host_name);
+
+	/* Convert the Device ID for URL use */
+	char * url_device_id = NULL;
+	urlEncode(device_id, device_id_length, &url_device_id);
+
+	/* Create data to be signed with the key containing the expiry time */
+	char * string_to_sign = (char*) AZURE_IOTC_MALLOC(BUFFER_SIZE_256);
+	assert(string_to_sign != NULL);
+	size_t size = snprintf(string_to_sign, BUFFER_SIZE_256, "%s%s%s\n%lu000", url_host_name, "%2Fdevices%2F", url_device_id, (long unsigned int)expires);
+	assert(size < BUFFER_SIZE_256);
+
+	/* Decode the Key */
+	size = 0;
+	char * key_decoded = (char*) AZURE_IOTC_MALLOC(key_length + 1);
+	assert(key_decoded != NULL);
+	mbedtls_base64_decode((unsigned char*)key_decoded, key_length, &size,
+	        (const unsigned char*)key, key_length);
+	assert(size > 0);
+	key_decoded[size] = 0;
+
+	/* Hash the data to be signed with the decoded key */
+	char * signed_string = NULL;
+	size_t signed_string_length = 0;
+	hash(key_decoded, size, string_to_sign, strlen(string_to_sign), &signed_string, &signed_string_length);
+	AZURE_IOTC_FREE(string_to_sign);
+
+	/* Encode the signed data */
+	size = 0;
+	char * data_encoded = (char*) AZURE_IOTC_MALLOC(BUFFER_SIZE_256);
+	assert(data_encoded != NULL);
+	mbedtls_base64_encode((unsigned char*)data_encoded, strlen(signed_string) * 3, &size,
+	        (const unsigned char*)signed_string, signed_string_length);
+	assert(size > 0);
+	char * url_data_encoded = NULL;
+	urlEncode(data_encoded, strlen(data_encoded), &url_data_encoded);
+
+	/* Generate Username String */
+	char* username = (char*) AZURE_IOTC_MALLOC(BUFFER_SIZE_256);
+	assert(username != NULL);
+	size = snprintf(username, BUFFER_SIZE_256,
+					   "%s/%s/api-version=2016-11-14",
+					   url_host_name, url_device_id);
+	assert(size > 0 && size < (unsigned int) BUFFER_SIZE_256);
+	username[size] = 0;
+
+	/* Generate Password String */
+	char* password = (char*) AZURE_IOTC_MALLOC(BUFFER_SIZE_256);
+	assert(password != NULL);
+	size = snprintf(password, BUFFER_SIZE_256,
+					   "SharedAccessSignature "
+					   "sr=%s%s%s&sig=%s&se=%ld000",
+					   url_host_name, "%2Fdevices%2F", url_device_id, url_data_encoded, (long unsigned int)expires);
+	assert(size > 0 && size < (unsigned int) BUFFER_SIZE_256);
+	password[size] = 0;
+
+	AZURE_PRINTF(
+			("\r\n"
+            "hostname: %s\r\n"
+            "device_id: %s\r\n"
+            "username: %s\r\n"
+            "password: %s\r\n",
+			host_name, device_id, username, password));
+
+	*ptr_username = username;
+	*ptr_password = password;
+
+	/* Free all remaining allocated ressources */
+	AZURE_IOTC_FREE(url_host_name);
+	AZURE_IOTC_FREE(url_device_id);
+	AZURE_IOTC_FREE(signed_string);
+	AZURE_IOTC_FREE(key_decoded);
+	AZURE_IOTC_FREE(data_encoded);
+	AZURE_IOTC_FREE(url_data_encoded);
 }
 
 bool topic_check(const char* topic, size_t len, char* str, size_t str_len)

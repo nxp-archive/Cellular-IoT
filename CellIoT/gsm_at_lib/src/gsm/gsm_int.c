@@ -1284,6 +1284,8 @@ gsmi_parse_received(gsm_recv_t* rcv) {
         	if( !strncmp( rcv->data , "OK" CRLF , 2+CRLF_LEN ))
         	{
         		is_ok = 1;
+        		/* Remove a connection to the valid connection structure */
+				gsm.m.conn_val_id--;
         	}
         	else if( !strncmp( rcv->data , "ERROR" CRLF , 5+CRLF_LEN ))
         	{
