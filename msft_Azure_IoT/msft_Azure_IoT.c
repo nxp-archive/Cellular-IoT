@@ -30,40 +30,90 @@
 /* Maximum amount of time a function call may block. */
 #define AzureTwinDemoTIMEOUT                    pdMS_TO_TICKS( 30000UL )
 
-#define Device_Telemetry_JSON 				\
+#define Device_Property_JSON 					\
+	"{"											\
+		"\"manufacturer\": \"%s\", "			\
+		"\"model\": \"%s\", "					\
+		"\"swVersion\": \"%s\", "				\
+		"\"osName\": \"%s\", "					\
+		"\"processorArchitecture\": \"%s\", "	\
+		"\"processorManufacturer\": \"%s\", "	\
+		"\"totalStorage\": %d, "				\
+		"\"totalMemory\": %d"					\
+	"}"
+
+char manufacturer[] = {"Avnet"};
+char model[] = {"Monarch LTE-M Dev Kit"};
+char swVersion[] = {"v1.0"};
+char osName[] = {"FreeRTOS"};
+char processorArchitecture[] = {"LPC55S69"};
+char processorManufacturer[] = {"NXP Semiconductor"};
+uint32_t totalStorage = 640;
+uint32_t totalMemory = 960;
+
+#define Device_Cellular_Telemetry_JSON 			\
+	"{"											\
+		"\"mcc\": %d, "	 						\
+		"\"mnc\": %d, "	 						\
+		"\"lac\": %d, "	 						\
+		"\"cid\": %d, " 						\
+		"\"rssi\": %d, "	 					\
+		"\"iccid\": \"%s\", "					\
+		"\"imei\": \"%s\", " 					\
+		"\"modem_fw\": \"%s\", " 				\
+		"\"device_id\": \"%s\"" 				\
+	"}"
+
+uint32_t mcc = 208;
+uint32_t mnc = 01;
+uint32_t lac = 0;
+uint32_t cid = 4;
+//double rssi = -63.4;
+char iccid[] = {"89148000005471125146"};
+char imei[] = {"354658090355378"};
+char modem_fw[] = {"UE5.2.0.1"};
+char device_id[] = {"19494031513"};
+
+
+#define Device_Sensor_Telemetry_JSON 		\
 	"{"										\
 		"\"aX\": %.2f, "	 				\
 		"\"aY\": %.2f, "	 				\
 		"\"aZ\": %.2f, "	 				\
-		"\"light_intensity\": %.2f, " 		\
-		"\"rssi\": %d, "	 				\
-		"\"device_id\": 19494031513, " 		\
-		"\"modem_fw\": \"UE5.2.0.1\", " 	\
-		"\"imei\": 354658090355378, " 		\
-		"\"iccid\": 89148000005471125146"	\
+		"\"light_sensor\": %.2f, " 			\
+		"\"button\": %d, "					\
+		"\"current\": %.2f"					\
 	"}"
+
+double aX = -3.2;
+double aY = 50.7;
+double aZ = -89.5;
+double light_sensor = 79.1;
+bool button = false;
+double current =  100.05;
 
 #define Device_Location_Telemetry_JSON 		\
 	"{"										\
 		"\"Location\":"						\
 		"{"									\
-			"\"lat\": %.2f, " 				\
-			"\"lon\": %.2f, " 				\
-			"\"alt\": %.2f" 				\
+			"\"value\":"					\
+			"{"								\
+				"\"lat\": %.6f, " 			\
+				"\"lon\": %.6f, " 			\
+				"\"alt\": %.6f" 			\
+			"}"								\
 		"}" 								\
 	"}"
 
-#define Device_Property_SET_JSON 							\
-	"{"														\
-		"\"manufacturer\": \"Avnet\", "						\
-		"\"model\": \"Monarch LTE-M Dev Kit\", "			\
-		"\"swVersion\": \"v1.0\", "							\
-		"\"osName\": \"FreeRTOS\", "						\
-		"\"processorArchitecture\": \"LPC55S69\", "			\
-		"\"processorManufacturer\": \"NXP Semiconductor\", "\
-		"\"totalStorage\": 640, "							\
-		"\"totalMemory\": 960"								\
+#define Device_Control_Property_JSON 		\
+	"{"										\
+		"\"tx_interval\": \"PT%dH%dM%dS\""	\
 	"}"
+
+double lat = 49.187104;
+double lon = -0.308766;
+double alt = 0;
+
 
 typedef enum AZURE_TWIN_TASK_ST
 {
@@ -80,14 +130,16 @@ typedef enum AZURE_TWIN_TASK_ST
 	AZURE_SM_SUB_DM,						/* Subscription to direct method topic */
 	AZURE_SM_SUB_DT,						/* Subscription to device telemetry topic */
 	AZURE_SM_SUB_DTWPC,						/* Subscription to device twin's property changes topic */
-	AZURE_SM_PUB_SET_TW_PROPERTIES,
-	AZURE_SM_WAIT_SET_TW_PROPERTIES_RESP,
-	AZURE_SM_PUB_TELEMETRY,
-	AZURE_SM_WAIT_TELEMETRY_RESP,
-	AZURE_SM_PUB_LOC_TELEMETRY,
-	AZURE_SM_WAIT_LOC_TELEMETRY_RESP,
 	AZURE_SM_PUB_GET_TW_PROPERTIES,
 	AZURE_SM_WAIT_GET_TW_PROPERTIES_RESP,
+	AZURE_SM_PUB_SET_TW_PROPERTIES,
+	AZURE_SM_WAIT_SET_TW_PROPERTIES_RESP,
+	AZURE_SM_PUB_SET_CONTROL_PROPERTIES,
+	AZURE_SM_WAIT_SET_CONTROL_PROPERTIES,
+	AZURE_SM_PUB_SENSOR_TELEMETRY,
+	AZURE_SM_PUB_LOC_TELEMETRY,
+	AZURE_SM_PUB_CELLULAR_TELEMETRY,
+	AZURE_SM_IDLE,
 	AZURE_SM_STATES_BNDRY
 }Azure_SM_Task;
 
@@ -96,6 +148,7 @@ const MQTTAgentConnectParams_t * pConnectParams = &xConnectParams;
 MQTTAgentHandle_t xMQTTHandle;
 
 static Azure_SM_Task eAzure_SM_Task;
+static Azure_SM_Task eNext_Azure_State;
 static MQTTAgentSubscribeParams_t xSubscribeParams;
 //static MQTTAgentUnsubscribeParams_t xUnsubscribeParams;
 static MQTTAgentPublishParams_t xPublishParameters;
@@ -187,27 +240,27 @@ void deviceTwinGetCallback(char * propertyName, char * payload, size_t payload_l
 
 	if (strcmp(propertyName, "rgb_red") == 0)
 	{
-		jsobject_t rgb_red;
-		jsobject_get_object_by_name(&object, "rgb_red", &rgb_red);
-		int v = jsobject_get_number_by_name(&rgb_red, "value");
-		AZURE_PRINTF(("==> Received a 'RED LED' update! New Value => %d", v));
-		jsobject_free(&rgb_red);
+		char* v = jsobject_get_data_by_name(&object, "rgb_red");
+		if(v)
+		{
+			AZURE_PRINTF(("==> Received a 'RED LED' update! New Value => %s\n", v));
+		}
 	}
 	else if (strcmp(propertyName, "rgb_green") == 0)
 	{
-		jsobject_t rgb_green;
-		jsobject_get_object_by_name(&object, "rgb_green", &rgb_green);
-		int v = jsobject_get_number_by_name(&rgb_green, "value");
-		AZURE_PRINTF(("==> Received a 'GREEN LED' update! New Value => %d", v));
-		jsobject_free(&rgb_green);
+		char* v = jsobject_get_data_by_name(&object, "rgb_green");
+		if(v)
+		{
+			AZURE_PRINTF(("==> Received a 'GREEN LED' update! New Value => %s\n", v));
+		}
 	}
 	else if (strcmp(propertyName, "rgb_blue") == 0)
 	{
-		jsobject_t rgb_blue;
-		jsobject_get_object_by_name(&object, "rgb_blue", &rgb_blue);
-		int v = jsobject_get_number_by_name(&rgb_blue, "value");
-		AZURE_PRINTF(("==> Received a 'BLUE LED' update! New Value => %d", v));
-		jsobject_free(&rgb_blue);
+		char* v = jsobject_get_data_by_name(&object, "rgb_blue");
+		if(v)
+		{
+			AZURE_PRINTF(("==> Received a 'BLUE LED' update! New Value => %s\n", v));
+		}
 	}
 	else
 	{
@@ -298,14 +351,6 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
 	char cPayload[256];
 	char cTopic[256];
 	uint8_t Req_Id =1;
-	double aX, aY, aZ, light_intensity, lat, lon, alt;
-	aX = 0.2;
-	aY = 50.7;
-	aZ = 100.5;
-	light_intensity = 79.1;
-	lat = 49.187104;
-	lon = -0.308766;
-	alt = 0;
 
     ( void ) pvParameters;
 
@@ -324,10 +369,12 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
 
     MQTT_AGENT_Init();
 
+#ifdef SAS_KEY
     generateSasToken(&sas_token,
     				 clientcredentialAZURE_IOT_SCOPE_ID, strlen(clientcredentialAZURE_IOT_SCOPE_ID),
 					 clientcredentialAZURE_IOT_DEVICE_ID, strlen(clientcredentialAZURE_IOT_DEVICE_ID),
 					 keyDEVICE_SAS_PRIMARY_KEY, strlen(keyDEVICE_SAS_PRIMARY_KEY));
+#endif
 
     memset( &xConnectParams, 0x00, sizeof( xConnectParams ) );
     xConnectParams.pcURL = clientcredentialAZURE_MQTT_BROKER_ENDPOINT;
@@ -504,11 +551,12 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
 				break;
 
 			case AZURE_SM_GEN_IOTC_CREDENTIALS:
-
+#ifdef SAS_KEY
 				getUsernameAndPassword(&username, &password,
 									   clientcredentialAZURE_IOT_DEVICE_ID, strlen(clientcredentialAZURE_IOT_DEVICE_ID),
 									   assigned_hub, strlen(assigned_hub),
 									   keyDEVICE_SAS_PRIMARY_KEY, strlen(keyDEVICE_SAS_PRIMARY_KEY));
+#endif
 
 				if( !(strlen(username) == 0U && strlen(password) == 0U) )
 				{
@@ -702,7 +750,7 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
 				if( MQTT_AGENT_Subscribe(xMQTTHandle, &xSubscribeParams, AzureTwinDemoTIMEOUT) == eMQTTAgentSuccess)
 				{
 					AZURE_PRINTF( ("Successfully Subscribe to Device Twin Patch Topic\r\n") );
-					eAzure_SM_Task = AZURE_SM_PUB_SET_TW_PROPERTIES;
+					eAzure_SM_Task = AZURE_SM_PUB_GET_TW_PROPERTIES;
 				}
 				else
 				{
@@ -712,143 +760,6 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
 					MQTT_AGENT_Disconnect(xMQTTHandle, AzureTwinDemoTIMEOUT);
 
 					eAzure_SM_Task = AZURE_SM_STATES_BNDRY;
-				}
-
-				break;
-
-    		case AZURE_SM_PUB_SET_TW_PROPERTIES:
-    			vTaskDelay(pdMS_TO_TICKS(1000));
-
-                memset(&(xPublishParameters), 0x00, sizeof(xPublishParameters));
-                memset(cTopic, 0, sizeof(cTopic));
-                memset(cPayload, 0, sizeof(cPayload));
-
-                sprintf(cTopic, AZURE_IOT_MQTT_TWIN_SET_TOPIC, Req_Id++ );
-
-                xPublishParameters.pucTopic = (const uint8_t *)cTopic;
-                xPublishParameters.pvData = Device_Property_SET_JSON;
-                xPublishParameters.usTopicLength = (uint16_t)strlen((const char *)cTopic);
-                xPublishParameters.ulDataLength = strlen((const char *)Device_Property_SET_JSON);
-                xPublishParameters.xQoS = eMQTTQoS0;
-
-                if( MQTT_AGENT_Publish(xMQTTHandle, &xPublishParameters, AzureTwinDemoTIMEOUT) == eMQTTAgentSuccess )
-                {
-                	AZURE_PRINTF( ("Successfully Publish to Device Twin Properties Topic\r\n"));
-                    eAzure_SM_Task = AZURE_SM_WAIT_SET_TW_PROPERTIES_RESP;
-                }
-                else
-                {
-                	AZURE_PRINTF( ("Unsuccessfully Publish to Device Twin Properties Topic\r\n"));
-                	AZURE_PRINTF( ("Disconnect\r\n"));
-                	MQTT_AGENT_Disconnect(xMQTTHandle, AzureTwinDemoTIMEOUT);
-                	eAzure_SM_Task = AZURE_SM_STATES_BNDRY;
-                }
-
-    			break;
-
-    		case AZURE_SM_WAIT_SET_TW_PROPERTIES_RESP:
-
-    			if( xEventGroupWaitBits(xCreatedEventGroup, EVENT_BIT_MASK, pdTRUE, pdFALSE, AzureTwinDemoTIMEOUT) == EVENT_BIT_MASK )
-    			{
-    				eAzure_SM_Task = AZURE_SM_PUB_TELEMETRY;
-    			}
-    			else
-    			{
-    				eAzure_SM_Task = AZURE_SM_PUB_TELEMETRY;
-    				AZURE_PRINTF ( ("No response received for AZURE_SM_PUB_SET_TW_PROPERTIES state\n") );
-    				vTaskDelay(pdMS_TO_TICKS(2000));
-    			}
-
-    			break;
-
-    		case AZURE_SM_PUB_TELEMETRY:
-				vTaskDelay(pdMS_TO_TICKS(1000));
-
-				memset(&(xPublishParameters), 0x00, sizeof(xPublishParameters));
-				memset(cTopic, 0, sizeof(cTopic));
-				memset(cPayload, 0, sizeof(cPayload));
-
-                sprintf(cTopic, AZURE_IOT_TELEMETRY_TOPIC_FOR_PUB, clientcredentialAZURE_IOT_DEVICE_ID);
-				sprintf(cPayload, Device_Telemetry_JSON, aX , aY, aZ, light_intensity, gsm.m.rssi );
-
-				xPublishParameters.pucTopic = (const uint8_t *)cTopic;
-				xPublishParameters.pvData = cPayload;
-				xPublishParameters.usTopicLength = (uint16_t)strlen(cTopic);
-				xPublishParameters.ulDataLength = strlen(cPayload);
-				xPublishParameters.xQoS = eMQTTQoS0;
-
-				if( MQTT_AGENT_Publish(xMQTTHandle, &xPublishParameters, AzureTwinDemoTIMEOUT) == eMQTTAgentSuccess )
-				{
-					AZURE_PRINTF( ("Successfully Publish to TELEMETRY Topic\r\n"));
-					eAzure_SM_Task = AZURE_SM_WAIT_TELEMETRY_RESP;
-				}
-				else
-				{
-					AZURE_PRINTF( ("Unsuccessfully Publish to TELEMETRY Topic\r\n"));
-					AZURE_PRINTF( ("Disconnect\r\n"));
-					MQTT_AGENT_Disconnect(xMQTTHandle, AzureTwinDemoTIMEOUT);
-					eAzure_SM_Task = AZURE_SM_STATES_BNDRY;
-				}
-
-				break;
-
-			case AZURE_SM_WAIT_TELEMETRY_RESP:
-
-				if( xEventGroupWaitBits(xCreatedEventGroup, EVENT_BIT_MASK, pdTRUE, pdFALSE, AzureTwinDemoTIMEOUT) == EVENT_BIT_MASK )
-				{
-					eAzure_SM_Task = AZURE_SM_PUB_LOC_TELEMETRY;
-				}
-				else
-				{
-					eAzure_SM_Task = AZURE_SM_PUB_LOC_TELEMETRY;
-    				AZURE_PRINTF ( ("No response received for AZURE_SM_PUB_TELEMETRY state\n") );
-					vTaskDelay(pdMS_TO_TICKS(2000));
-				}
-
-				break;
-
-    		case AZURE_SM_PUB_LOC_TELEMETRY:
-				vTaskDelay(pdMS_TO_TICKS(1000));
-
-				memset(&(xPublishParameters), 0x00, sizeof(xPublishParameters));
-				memset(cTopic, 0, sizeof(cTopic));
-				memset(cPayload, 0, sizeof(cPayload));
-
-                sprintf(cTopic, AZURE_IOT_TELEMETRY_TOPIC_FOR_PUB, clientcredentialAZURE_IOT_DEVICE_ID);
-				sprintf(cPayload, Device_Location_Telemetry_JSON, lat , lon, alt);
-
-				xPublishParameters.pucTopic = (const uint8_t *)AZURE_IOT_TELEMETRY_TOPIC_FOR_PUB;
-				xPublishParameters.pvData = cPayload;
-				xPublishParameters.usTopicLength = (uint16_t)strlen(cTopic);
-				xPublishParameters.ulDataLength = strlen(cPayload);
-				xPublishParameters.xQoS = eMQTTQoS0;
-
-				if( MQTT_AGENT_Publish(xMQTTHandle, &xPublishParameters, AzureTwinDemoTIMEOUT) == eMQTTAgentSuccess )
-				{
-					AZURE_PRINTF( ("Successfully Publish to TELEMETRY Topic\r\n"));
-					eAzure_SM_Task = AZURE_SM_WAIT_LOC_TELEMETRY_RESP;
-				}
-				else
-				{
-					AZURE_PRINTF( ("Unsuccessfully Publish to TELEMETRY Topic\r\n"));
-					AZURE_PRINTF( ("Disconnect\r\n"));
-					MQTT_AGENT_Disconnect(xMQTTHandle, AzureTwinDemoTIMEOUT);
-					eAzure_SM_Task = AZURE_SM_STATES_BNDRY;
-				}
-
-				break;
-
-			case AZURE_SM_WAIT_LOC_TELEMETRY_RESP:
-
-				if( xEventGroupWaitBits(xCreatedEventGroup, EVENT_BIT_MASK, pdTRUE, pdFALSE, AzureTwinDemoTIMEOUT) == EVENT_BIT_MASK )
-				{
-					eAzure_SM_Task = AZURE_SM_PUB_GET_TW_PROPERTIES;
-				}
-				else
-				{
-					eAzure_SM_Task = AZURE_SM_PUB_GET_TW_PROPERTIES;
-    				AZURE_PRINTF ( ("No response received for AZURE_SM_PUB_TELEMETRY state\n") );
-					vTaskDelay(pdMS_TO_TICKS(2000));
 				}
 
 				break;
@@ -893,6 +804,199 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
     				AZURE_PRINTF ( ("No response received for AZURE_SM_PUB_GET_TW_PROPERTIES state\n") );
     				vTaskDelay(pdMS_TO_TICKS(2000));
     			}
+    			break;
+
+    		case AZURE_SM_PUB_SET_TW_PROPERTIES:
+    			vTaskDelay(pdMS_TO_TICKS(1000));
+
+                memset(&(xPublishParameters), 0x00, sizeof(xPublishParameters));
+                memset(cTopic, 0, sizeof(cTopic));
+                memset(cPayload, 0, sizeof(cPayload));
+
+                sprintf(cTopic, AZURE_IOT_MQTT_TWIN_SET_TOPIC, Req_Id++ );
+                sprintf(cPayload, Device_Property_JSON, manufacturer , model, swVersion, osName, processorArchitecture, processorManufacturer, totalStorage, totalMemory);
+
+                xPublishParameters.pucTopic = (const uint8_t *)cTopic;
+                xPublishParameters.pvData = cPayload;
+                xPublishParameters.usTopicLength = (uint16_t)strlen((const char *)cTopic);
+                xPublishParameters.ulDataLength = strlen((const char *)cPayload);
+                xPublishParameters.xQoS = eMQTTQoS0;
+
+                if( MQTT_AGENT_Publish(xMQTTHandle, &xPublishParameters, AzureTwinDemoTIMEOUT) == eMQTTAgentSuccess )
+                {
+                	AZURE_PRINTF( ("Successfully Publish to Device Twin Properties Topic\r\n"));
+                    eAzure_SM_Task = AZURE_SM_WAIT_SET_TW_PROPERTIES_RESP;
+                }
+                else
+                {
+                	AZURE_PRINTF( ("Unsuccessfully Publish to Device Twin Properties Topic\r\n"));
+                	AZURE_PRINTF( ("Disconnect\r\n"));
+                	MQTT_AGENT_Disconnect(xMQTTHandle, AzureTwinDemoTIMEOUT);
+                	eAzure_SM_Task = AZURE_SM_STATES_BNDRY;
+                }
+
+    			break;
+
+    		case AZURE_SM_WAIT_SET_TW_PROPERTIES_RESP:
+
+    			if( xEventGroupWaitBits(xCreatedEventGroup, EVENT_BIT_MASK, pdTRUE, pdFALSE, AzureTwinDemoTIMEOUT) == EVENT_BIT_MASK )
+    			{
+    				eAzure_SM_Task = AZURE_SM_PUB_SET_CONTROL_PROPERTIES;
+    			}
+    			else
+    			{
+    				eAzure_SM_Task = AZURE_SM_PUB_SET_CONTROL_PROPERTIES;
+    				AZURE_PRINTF ( ("No response received for AZURE_SM_PUB_SET_TW_PROPERTIES state\n") );
+    				vTaskDelay(pdMS_TO_TICKS(2000));
+    			}
+
+    			break;
+
+    		case AZURE_SM_PUB_SET_CONTROL_PROPERTIES:
+    			vTaskDelay(pdMS_TO_TICKS(1000));
+
+                memset(&(xPublishParameters), 0x00, sizeof(xPublishParameters));
+                memset(cTopic, 0, sizeof(cTopic));
+                memset(cPayload, 0, sizeof(cPayload));
+
+                sprintf(cTopic, AZURE_IOT_MQTT_TWIN_SET_TOPIC, Req_Id++ );
+                sprintf(cPayload, Device_Control_Property_JSON, 0U , 1U, 0U);
+
+                xPublishParameters.pucTopic = (const uint8_t *)cTopic;
+                xPublishParameters.pvData = cPayload;
+                xPublishParameters.usTopicLength = (uint16_t)strlen((const char *)cTopic);
+                xPublishParameters.ulDataLength = strlen((const char *)cPayload);
+                xPublishParameters.xQoS = eMQTTQoS0;
+
+                if( MQTT_AGENT_Publish(xMQTTHandle, &xPublishParameters, AzureTwinDemoTIMEOUT) == eMQTTAgentSuccess )
+                {
+                	AZURE_PRINTF( ("Successfully Publish to Device Twin Properties Topic\r\n"));
+                    eAzure_SM_Task = AZURE_SM_WAIT_SET_CONTROL_PROPERTIES;
+                }
+                else
+                {
+                	AZURE_PRINTF( ("Unsuccessfully Publish to Device Twin Properties Topic\r\n"));
+                	AZURE_PRINTF( ("Disconnect\r\n"));
+                	MQTT_AGENT_Disconnect(xMQTTHandle, AzureTwinDemoTIMEOUT);
+                	eAzure_SM_Task = AZURE_SM_STATES_BNDRY;
+                }
+
+				break;
+
+    		case AZURE_SM_WAIT_SET_CONTROL_PROPERTIES:
+
+    			if( xEventGroupWaitBits(xCreatedEventGroup, EVENT_BIT_MASK, pdTRUE, pdFALSE, AzureTwinDemoTIMEOUT) == EVENT_BIT_MASK )
+    			{
+    				eAzure_SM_Task = AZURE_SM_PUB_SENSOR_TELEMETRY;
+    			}
+    			else
+    			{
+    				eAzure_SM_Task = AZURE_SM_PUB_SENSOR_TELEMETRY;
+    				AZURE_PRINTF ( ("No response received for AZURE_SM_PUB_SET_TW_PROPERTIES state\n") );
+    				vTaskDelay(pdMS_TO_TICKS(2000));
+    			}
+
+    			break;
+
+    		case AZURE_SM_PUB_SENSOR_TELEMETRY:
+				vTaskDelay(pdMS_TO_TICKS(1000));
+
+				memset(&(xPublishParameters), 0x00, sizeof(xPublishParameters));
+				memset(cTopic, 0, sizeof(cTopic));
+				memset(cPayload, 0, sizeof(cPayload));
+
+                sprintf(cTopic, AZURE_IOT_TELEMETRY_TOPIC_FOR_PUB, clientcredentialAZURE_IOT_DEVICE_ID);
+				sprintf(cPayload, Device_Sensor_Telemetry_JSON, aX , aY, aZ, light_sensor, button, current);
+
+				xPublishParameters.pucTopic = (const uint8_t *)cTopic;
+				xPublishParameters.pvData = cPayload;
+				xPublishParameters.usTopicLength = (uint16_t)strlen(cTopic);
+				xPublishParameters.ulDataLength = strlen(cPayload);
+				xPublishParameters.xQoS = eMQTTQoS0;
+
+				if( MQTT_AGENT_Publish(xMQTTHandle, &xPublishParameters, AzureTwinDemoTIMEOUT) == eMQTTAgentSuccess )
+				{
+					AZURE_PRINTF( ("Successfully Publish to SENSOR_TELEMETRY Topic\r\n"));
+					eNext_Azure_State = AZURE_SM_PUB_LOC_TELEMETRY;
+					eAzure_SM_Task = AZURE_SM_IDLE;
+				}
+				else
+				{
+					AZURE_PRINTF( ("Unsuccessfully Publish to SENSOR_TELEMETRY Topic\r\n"));
+					AZURE_PRINTF( ("Disconnect\r\n"));
+					MQTT_AGENT_Disconnect(xMQTTHandle, AzureTwinDemoTIMEOUT);
+					eAzure_SM_Task = AZURE_SM_STATES_BNDRY;
+				}
+
+				break;
+
+    		case AZURE_SM_PUB_LOC_TELEMETRY:
+				vTaskDelay(pdMS_TO_TICKS(1000));
+
+				memset(&(xPublishParameters), 0x00, sizeof(xPublishParameters));
+				memset(cTopic, 0, sizeof(cTopic));
+				memset(cPayload, 0, sizeof(cPayload));
+
+                sprintf(cTopic, AZURE_IOT_TELEMETRY_TOPIC_FOR_PUB, clientcredentialAZURE_IOT_DEVICE_ID);
+				sprintf(cPayload, Device_Location_Telemetry_JSON, lat, lon, alt);
+
+				xPublishParameters.pucTopic = (const uint8_t *)cTopic;
+				xPublishParameters.pvData = cPayload;
+				xPublishParameters.usTopicLength = (uint16_t)strlen(cTopic);
+				xPublishParameters.ulDataLength = strlen(cPayload);
+				xPublishParameters.xQoS = eMQTTQoS0;
+
+				if( MQTT_AGENT_Publish(xMQTTHandle, &xPublishParameters, AzureTwinDemoTIMEOUT) == eMQTTAgentSuccess )
+				{
+					AZURE_PRINTF( ("Successfully Publish to LOC_TELEMETRY Topic\r\n"));
+					eNext_Azure_State = AZURE_SM_PUB_CELLULAR_TELEMETRY;
+					eAzure_SM_Task = AZURE_SM_IDLE;
+				}
+				else
+				{
+					AZURE_PRINTF( ("Unsuccessfully Publish to LOC_TELEMETRY Topic\r\n"));
+					AZURE_PRINTF( ("Disconnect\r\n"));
+					MQTT_AGENT_Disconnect(xMQTTHandle, AzureTwinDemoTIMEOUT);
+					eAzure_SM_Task = AZURE_SM_STATES_BNDRY;
+				}
+
+				break;
+
+    		case AZURE_SM_PUB_CELLULAR_TELEMETRY:
+				vTaskDelay(pdMS_TO_TICKS(1000));
+
+				memset(&(xPublishParameters), 0x00, sizeof(xPublishParameters));
+				memset(cTopic, 0, sizeof(cTopic));
+				memset(cPayload, 0, sizeof(cPayload));
+
+                sprintf(cTopic, AZURE_IOT_TELEMETRY_TOPIC_FOR_PUB, clientcredentialAZURE_IOT_DEVICE_ID);
+				sprintf(cPayload, Device_Cellular_Telemetry_JSON, mcc , mnc, lac, cid, gsm.m.rssi, iccid, imei, modem_fw, device_id);
+
+				xPublishParameters.pucTopic = (const uint8_t *)cTopic;
+				xPublishParameters.pvData = cPayload;
+				xPublishParameters.usTopicLength = (uint16_t)strlen(cTopic);
+				xPublishParameters.ulDataLength = strlen(cPayload);
+				xPublishParameters.xQoS = eMQTTQoS0;
+
+				if( MQTT_AGENT_Publish(xMQTTHandle, &xPublishParameters, AzureTwinDemoTIMEOUT) == eMQTTAgentSuccess )
+				{
+					AZURE_PRINTF( ("Successfully Publish to CELLULAR_TELEMETRY Topic\r\n"));
+					eNext_Azure_State = AZURE_SM_PUB_SENSOR_TELEMETRY;
+					eAzure_SM_Task = AZURE_SM_IDLE;
+				}
+				else
+				{
+					AZURE_PRINTF( ("Unsuccessfully Publish to CELLULAR_TELEMETRY Topic\r\n"));
+					AZURE_PRINTF( ("Disconnect\r\n"));
+					MQTT_AGENT_Disconnect(xMQTTHandle, AzureTwinDemoTIMEOUT);
+					eAzure_SM_Task = AZURE_SM_STATES_BNDRY;
+				}
+
+				break;
+
+    		case AZURE_SM_IDLE:
+    			vTaskDelay(pdMS_TO_TICKS(60000));
+    			eAzure_SM_Task = eNext_Azure_State;
     			break;
 
     		default:

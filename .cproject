@@ -861,7 +861,6 @@
 									<listOptionValue builtIn="false" value="A_LITTLE_ENDIAN"/>
 									<listOptionValue builtIn="false" value="FSL_RTOS_FREE_RTOS"/>
 									<listOptionValue builtIn="false" value="SDK_DEBUGCONSOLE=1"/>
-									<listOptionValue builtIn="false" value="CR_INTEGER_PRINTF"/>
 									<listOptionValue builtIn="false" value="PRINTF_FLOAT_ENABLE=0"/>
 									<listOptionValue builtIn="false" value="__MCUXPRESSO"/>
 									<listOptionValue builtIn="false" value="__USE_CMSIS"/>
@@ -1265,7 +1264,6 @@
 									<listOptionValue builtIn="false" value="FSL_FEATURE_GPIO_HAS_NO_RESET=1"/>
 									<listOptionValue builtIn="false" value="A_LITTLE_ENDIAN"/>
 									<listOptionValue builtIn="false" value="FSL_RTOS_FREE_RTOS"/>
-									<listOptionValue builtIn="false" value="CR_INTEGER_PRINTF"/>
 									<listOptionValue builtIn="false" value="PRINTF_FLOAT_ENABLE=0"/>
 									<listOptionValue builtIn="false" value="__MCUXPRESSO"/>
 									<listOptionValue builtIn="false" value="__USE_CMSIS"/>
