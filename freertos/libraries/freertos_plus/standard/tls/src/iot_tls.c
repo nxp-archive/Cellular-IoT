@@ -106,6 +106,7 @@ typedef struct TLSContext
     const char ** ppcAlpnProtocols;
     uint32_t ulAlpnProtocolsCount;
 
+    TimeoutNetworkRecv_t xTimeoutNetworkRecv;
     NetworkRecv_t xNetworkRecv;
     NetworkSend_t xNetworkSend;
     void * pvCallerContext;
@@ -197,6 +198,27 @@ static int prvNetworkRecv( void * pvContext,
     TLSContext_t * pxCtx = ( TLSContext_t * ) pvContext; /*lint !e9087 !e9079 Allow casting void* to other types. */
 
     return ( int ) pxCtx->xNetworkRecv( pxCtx->pvCallerContext, pucReceiveBuffer, xReceiveLength );
+}
+
+/*-----------------------------------------------------------*/
+
+/**
+ * @brief Network receive callback shim.
+ *
+ * @param[in] pvContext Caller context.
+ * @param[out] pucReceiveBuffer Byte buffer to receive into.
+ * @param[in] xReceiveLength Length of byte buffer for receive.
+ *
+ * @return Number of bytes received, or a negative value on error.
+ */
+static int prvTimeoutNetworkRecv( void * pvContext,
+								  unsigned char * pucReceiveBuffer,
+								  size_t xReceiveLength,
+								  uint32_t u32TimeoutPeriodInMs)
+{
+    TLSContext_t * pxCtx = ( TLSContext_t * ) pvContext; /*lint !e9087 !e9079 Allow casting void* to other types. */
+
+    return ( int ) pxCtx->xTimeoutNetworkRecv( pxCtx->pvCallerContext, pucReceiveBuffer, xReceiveLength, u32TimeoutPeriodInMs );
 }
 
 /*-----------------------------------------------------------*/
@@ -720,6 +742,7 @@ BaseType_t TLS_Init( void ** ppvContext,
         pxCtx->ulServerCertificateLength = pxParams->ulServerCertificateLength;
         pxCtx->ppcAlpnProtocols = pxParams->ppcAlpnProtocols;
         pxCtx->ulAlpnProtocolsCount = pxParams->ulAlpnProtocolsCount;
+        pxCtx->xTimeoutNetworkRecv = pxParams->pxTimeoutNetworkRecv;
         pxCtx->xNetworkRecv = pxParams->pxNetworkRecv;
         pxCtx->xNetworkSend = pxParams->pxNetworkSend;
         pxCtx->pvCallerContext = pxParams->pvCallerContext;
@@ -768,6 +791,7 @@ BaseType_t TLS_Init( void ** ppvContext,
 #endif /* ifdef MBEDTLS_DEBUG_C */
 
 /*-----------------------------------------------------------*/
+extern void xInitTimeoutNwkRecvTimer(uint32_t u32Timeout);
 
 BaseType_t TLS_Connect( void * pvContext )
 {
@@ -933,7 +957,10 @@ BaseType_t TLS_Connect( void * pvContext )
                              pxCtx,
                              prvNetworkSend,
                              prvNetworkRecv,
-                             NULL );
+							 prvTimeoutNetworkRecv );
+
+        mbedtls_ssl_conf_read_timeout( &pxCtx->xMbedSslConfig, SOCKET_RECV_TIMEOUT );
+        xInitTimeoutNwkRecvTimer(pxCtx->xMbedSslConfig.read_timeout);
 
         /* Negotiate. */
         while( 0 != ( xResult = mbedtls_ssl_handshake( &pxCtx->xMbedSslCtx ) ) )

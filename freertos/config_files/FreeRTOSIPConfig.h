@@ -37,6 +37,8 @@
 
 #include <stdio.h>
 
+#define SOCKET_RECV_TIMEOUT	5000U
+
 /* Prototype for the function used to print out.  In this case it prints to the
  * console before the network is connected then a UDP port after the network has
  * connected. */

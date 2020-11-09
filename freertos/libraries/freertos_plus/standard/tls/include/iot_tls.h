@@ -55,6 +55,20 @@
  *
  * @return The number of bytes actually read.
  */
+typedef BaseType_t ( * TimeoutNetworkRecv_t )( 	void * pvCallerContext,
+                                        		unsigned char * pucReceiveBuffer,
+												size_t xReceiveLength,
+												uint32_t u32TimeoutPeriodInMs);
+
+/**
+ * @brief Defines callback type for receiving bytes from the network.
+ *
+ * @param[in] pvCallerContext Opaque context handle provided by caller.
+ * @param[out] pucReceiveBuffer Buffer to fill with received data.
+ * @param[in] xReceiveLength Length of previous parameter in bytes.
+ *
+ * @return The number of bytes actually read.
+ */
 typedef BaseType_t ( * NetworkRecv_t )( void * pvCallerContext,
                                         unsigned char * pucReceiveBuffer,
                                         size_t xReceiveLength );
@@ -94,6 +108,7 @@ typedef struct xTLS_PARAMS
     const char ** ppcAlpnProtocols;
     uint32_t ulAlpnProtocolsCount;
 
+    TimeoutNetworkRecv_t pxTimeoutNetworkRecv;
     NetworkRecv_t pxNetworkRecv;
     NetworkSend_t pxNetworkSend;
     void * pvCallerContext;

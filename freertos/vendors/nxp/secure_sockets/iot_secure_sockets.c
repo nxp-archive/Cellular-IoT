@@ -36,6 +36,7 @@
 #include "iot_secure_sockets.h"
 #include "iot_tls.h"
 #include "task.h"
+#include "timers.h"
 
 /* Logging includes. */
 //#include "iot_logging_task.h"
@@ -99,6 +100,9 @@ typedef struct SSOCKETContext
     uint32_t ulAlpnProtocolsCount;
 } SSOCKETContext_t, * SSOCKETContextPtr_t;
 
+static uint8_t u8timeoutExpired;
+TimerHandle_t xRcvTimer;
+
 /*
  * Helper routines.
  */
@@ -149,6 +153,7 @@ static BaseType_t prvNetworkSend( void * pvContext,
 #endif
 
 }
+
 /*-----------------------------------------------------------*/
 
 /*
@@ -167,17 +172,69 @@ static BaseType_t prvNetworkRecv( void * pvContext,
         return -1;
     }
 
-    /* implement AT command to receive */
     uint32_t i = 0;
     do
     {
     	xRetVal = CellIoT_lib_socketReadData( gsm.m.conn_val_id, pucReceiveBuffer , xReceiveLength );
     	if( 0 == xRetVal )
     		vTaskDelay(pdMS_TO_TICKS(1));
-    }while( 0 == xRetVal && ++i < 500);
+    }while( 0 == xRetVal && ++i < 2000);
 
     return xRetVal;
 }
+
+/*-----------------------------------------------------------*/
+
+void vRcvTimerCallback( TimerHandle_t xTimer )
+{
+   /* Optionally do something if the pxTimer parameter is NULL. */
+   configASSERT( xTimer );
+
+   u8timeoutExpired = 1;
+
+}
+
+void xInitTimeoutNwkRecvTimer(uint32_t u32Timeout)
+{
+	xRcvTimer = xTimerCreate("Receive Timer",
+							pdMS_TO_TICKS(u32Timeout),
+							pdFALSE,
+							( void * ) 0,
+							vRcvTimerCallback );
+}
+
+/*
+ * @brief Network receive callback.
+ */
+static BaseType_t prvTimeoutNetworkRecv( void * pvContext,
+                                  	  	 unsigned char * pucReceiveBuffer,
+										 size_t xReceiveLength,
+										 uint32_t u32TimeoutPeriodInMs)
+{
+    SSOCKETContextPtr_t pxContext = ( SSOCKETContextPtr_t ) pvContext;
+    int xRetVal = 0;
+
+    /* Do not receive data on unconnected socket */
+    if( !( pxContext->ulState & nxpsecuresocketsSOCKET_CONNECTED_FLAG ) )
+    {
+        return -1;
+    }
+
+    u8timeoutExpired = 0;
+    xTimerStart( xRcvTimer, 0 );
+
+    do
+    {
+    	xRetVal = CellIoT_lib_socketReadData( gsm.m.conn_val_id, pucReceiveBuffer , xReceiveLength );
+    	if( 0 == xRetVal )
+    		vTaskDelay(pdMS_TO_TICKS(1));
+    }while( 0 == xRetVal && 0 == u8timeoutExpired);
+
+    u8timeoutExpired = 0;
+
+    return xRetVal;
+}
+
 /*-----------------------------------------------------------*/
 
 /*
@@ -296,6 +353,7 @@ int32_t SOCKETS_Connect( Socket_t xSocket,
             xTLSParams.pcServerCertificate = pxContext->pcServerCertificate;
             xTLSParams.ulServerCertificateLength = pxContext->ulServerCertificateLength;
             xTLSParams.pvCallerContext = pxContext;
+            xTLSParams.pxTimeoutNetworkRecv = prvTimeoutNetworkRecv;
             xTLSParams.pxNetworkRecv = prvNetworkRecv;
             xTLSParams.pxNetworkSend = prvNetworkSend;
             xTLSParams.ppcAlpnProtocols = ( const char ** ) pxContext->ppcAlpnProtocols;

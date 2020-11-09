@@ -538,6 +538,23 @@ void prvShadowMainTask(void *pvParameters)
 
     for (;;)
     {
+    	/* Alex Heap calculations */
+    	static size_t s_freertos_remaining_heap_size = 0xFFFFFFFF;
+		if( xPortGetMinimumEverFreeHeapSize() < s_freertos_remaining_heap_size )
+		{
+			s_freertos_remaining_heap_size = xPortGetMinimumEverFreeHeapSize();
+			configPRINTF(("s_freertos_remaining_heap_size : %d\r\n",s_freertos_remaining_heap_size));
+		}
+
+		extern unsigned int __end_of_heap;
+		static unsigned int s_mcu_end_of_heap= 0xFFFFFFFF;
+		if( __end_of_heap != s_mcu_end_of_heap )
+		{
+			s_mcu_end_of_heap = __end_of_heap;
+			configPRINTF(("s_mcu_end_of_heap : 0x%x\r\n",s_mcu_end_of_heap));
+		}
+    	/* Alex End */
+
         /* process delta shadow JSON received in prvDeltaCallback() */
         if (xQueueReceive(jsonDeltaQueue, &jsonDelta, portMAX_DELAY) == pdTRUE)
         {
