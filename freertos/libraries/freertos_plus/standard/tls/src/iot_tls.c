@@ -588,6 +588,7 @@ static int prvInitializeClientCredential( TLSContext_t * pxCtx )
                                                                     ( CK_UTF8CHAR_PTR ) configPKCS11_DEFAULT_USER_PIN,
                                                                     sizeof( configPKCS11_DEFAULT_USER_PIN ) - 1 );
     }
+#ifndef SAS_KEY
 #if SSS_HAVE_SSS
     char keyLabel[20];
     memset(keyLabel, 0, sizeof(keyLabel));
@@ -705,7 +706,7 @@ static int prvInitializeClientCredential( TLSContext_t * pxCtx )
                                              &pxCtx->xMbedX509Cli,
                                              &pxCtx->xMbedPkCtx );
     }
-
+#endif
     /* Free memory. */
     if( NULL != pxSlotIds )
     {
@@ -846,6 +847,7 @@ BaseType_t TLS_Connect( void * pvContext )
         }
     }
 #elif USE_AZURE_CLOUD
+#ifndef SAS_KEY
     else
         {
             xResult = mbedtls_x509_crt_parse( &pxCtx->xMbedX509CA,
@@ -858,6 +860,7 @@ BaseType_t TLS_Connect( void * pvContext )
                 TLS_PRINT( ( "ERROR: Failed to parse default server certificates %d \r\n", xResult ) );
             }
         }
+#endif
 #endif
 
     /* Start with protocol defaults. */

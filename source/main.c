@@ -281,7 +281,7 @@ status_t init_mag_accel(uint8_t *accelDataScale, uint8_t *accelResolution)
 
 void vApplicationDaemonTaskStartupHook(void)
 {
-//#ifndef SAS_KEY
+#ifndef SAS_KEY
     /* A simple example to demonstrate key and certificate provisioning in
      * microcontroller flash using PKCS#11 interface. This should be replaced
      * by production ready key provisioning mechanism. */
@@ -290,7 +290,7 @@ void vApplicationDaemonTaskStartupHook(void)
 		configPRINTF(("DevModeKeyProvisioning failed, stopping demo.\r\n"));
 		vTaskDelete(NULL);
 	}
-//#endif
+#endif
 
     /*
      * Initialize
