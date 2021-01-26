@@ -126,6 +126,15 @@ double current =  100.05;
 		"\"tx_interval\": \"PT%dH%dM%dS\""	\
 	"}"
 
+char tx_interval_state[50];
+#define NB_OF_DIGITS_FOR_UINT16 5
+#define SEC_TO_MILLISEC_MULTIPLIER	1000
+#define MIN_TO_SEC_MULTIPLIER		60
+#define HOUR_TO_MIN_MULTIPLIER		60
+int16_t tx_interval_hours = 0;
+int16_t tx_interval_mins = 1;
+int16_t tx_interval_secs = 0;
+
 double lat = 49.187104;
 double lon = -0.308766;
 double alt = 0;
@@ -185,9 +194,10 @@ EventGroupHandle_t xCreatedEventGroup;
 TimerHandle_t xTelemetryPublishTimer;
 EventBits_t uxBits;
 bool bIsStartUpPhase = true;
-#define EVENT_BIT_MASK	( 1 << 0 )
-#define LED_UPDATE_BIT_MASK	( 1 << 1 )
-#define TELEMETRY_PUB_BIT_MASK	( 1 << 2 )
+#define EVENT_BIT_MASK						( 1 << 0 )
+#define LED_UPDATE_BIT_MASK					( 1 << 1 )
+#define TELEMETRY_PUB_BIT_MASK				( 1 << 2 )
+#define REPORTING_PERIOD_UPDATE_BIT_MASK	( 1 << 3 )
 
 #if defined(BOARD_ACCEL_FXOS) || defined(BOARD_ACCEL_MMA)
 /* Actual state of accelerometer */
@@ -281,7 +291,139 @@ int readAccelData(vector_t* vec)
 }
 #endif
 
+int16_t check_and_get_time_interval(char * time_in_characters)
+{
+	int16_t time = 0;
 
+	for (uint8_t i=0; i<strlen(time_in_characters); i++)
+	{
+		if( ( '0' <= time_in_characters[i] ) && ( time_in_characters[i] <= '9' ) )
+		{
+			time *= 10;
+			time += (time_in_characters[i] - 0x30);
+		}
+		else
+		{
+			/* Invalid character, stop processing here --> -1 = error */
+			time = -1;
+			break;
+		}
+	}
+
+	return time;
+
+}
+
+int process_and_update_tx_telemetry_time(const char * interval)
+{
+	/*
+	 * Step 1: Search for P
+	 * Step 2: Search for T and discard everything in between
+	 * Step 3: Search for H/h and M/m and S/s and keep the value seen before
+	 * Step 4: Store the value found in the correct variable
+	 */
+	typedef enum
+	{
+		FIND_P,
+		FIND_T,
+		PROCESS_VALUES,
+		STOP_PROCESSING
+	} searchSteps;
+
+	searchSteps state = FIND_P;
+
+	int i,j = 0;
+	char temp[5];
+
+	memset(temp, 0, sizeof(temp));
+
+	for(i=0; i<strlen(interval); i++)
+	{
+		switch(state)
+		{
+			case FIND_P:
+				if (interval[i] == 0x50 ||
+					interval[i] == 0x70)	state = FIND_T;
+				break;
+
+			case FIND_T:
+				if (interval[i] == 0x54 ||
+					interval[i] == 0x74 )	state = PROCESS_VALUES;
+				break;
+
+			case PROCESS_VALUES:
+				if (interval[i] == 0x48 ||
+					interval[i] == 0x68 )
+				{
+					tx_interval_hours = check_and_get_time_interval(temp);
+					if (tx_interval_hours == -1)
+					{
+						state = STOP_PROCESSING;
+						break;
+					}
+					memset(temp, 0, sizeof(temp));
+					j = 0;
+				}
+				else if (interval[i] == 0x4D ||
+						 interval[i] == 0x6D )
+				{
+					tx_interval_mins = check_and_get_time_interval(temp);
+					if (tx_interval_mins == -1)
+					{
+						state = STOP_PROCESSING;
+						break;
+					}
+					memset(temp, 0, sizeof(temp));
+					j = 0;
+				}
+				else if (interval[i] == 0x53 ||
+						 interval[i] == 0x73 )
+				{
+					tx_interval_secs = check_and_get_time_interval(temp);
+					if (tx_interval_secs == -1)
+					{
+						state = STOP_PROCESSING;
+						break;
+					}
+					memset(temp, 0, sizeof(temp));
+					j = 0;
+				}
+				else
+				{
+					temp[j++] = (char)interval[i];
+					/* If number processing get more than 5 digits,
+					 * the format is too large to be stored in uint16_t type so we stop processing
+					 */
+					if(j == NB_OF_DIGITS_FOR_UINT16)	state = STOP_PROCESSING;
+				}
+				break;
+
+			case STOP_PROCESSING:
+				break;
+
+			default:
+				break;
+		}
+		if (state == STOP_PROCESSING)	break;
+	}
+
+	if (state == PROCESS_VALUES &&
+		tx_interval_hours != -1 &&
+		tx_interval_mins != -1 &&
+		tx_interval_secs != -1)
+	{
+		xTimerChangePeriod(xTelemetryPublishTimer,
+						   pdMS_TO_TICKS(tx_interval_secs  * SEC_TO_MILLISEC_MULTIPLIER +
+										 tx_interval_mins  * MIN_TO_SEC_MULTIPLIER * SEC_TO_MILLISEC_MULTIPLIER +
+										 tx_interval_hours * HOUR_TO_MIN_MULTIPLIER * MIN_TO_SEC_MULTIPLIER * SEC_TO_MILLISEC_MULTIPLIER),
+						   100);
+		return 0;	/* Success */
+	}
+	else
+	{
+		return 1;	/* Error */
+	}
+}
 
 
 void vTimerCallback( TimerHandle_t xTimer )
@@ -390,6 +532,7 @@ void deviceTwinGetCallback(char * propertyName, char * payload, size_t payload_l
 				/* Do nothing */
 			}
 			AZURE_IOTC_FREE(v);
+			xEventGroupSetBits(xCreatedEventGroup, LED_UPDATE_BIT_MASK);
 		}
 	}
 	else if (strcmp(propertyName, "rgb_green") == 0)
@@ -413,6 +556,7 @@ void deviceTwinGetCallback(char * propertyName, char * payload, size_t payload_l
 				/* Do nothing */
 			}
 			AZURE_IOTC_FREE(v);
+			xEventGroupSetBits(xCreatedEventGroup, LED_UPDATE_BIT_MASK);
 		}
 	}
 	else if (strcmp(propertyName, "rgb_blue") == 0)
@@ -436,6 +580,20 @@ void deviceTwinGetCallback(char * propertyName, char * payload, size_t payload_l
 				/* Do nothing */
 			}
 			AZURE_IOTC_FREE(v);
+			xEventGroupSetBits(xCreatedEventGroup, LED_UPDATE_BIT_MASK);
+		}
+	}
+	else if (strcmp(propertyName, "tx_interval") == 0)
+	{
+		char* v = jsobject_get_data_by_name(&object, "tx_interval");
+		if(v)
+		{
+			AZURE_PRINTF(("==> Received a 'TX Interval' update! New Value => %s\n", v));
+		    memset(tx_interval_state, 0, sizeof(tx_interval_state));
+			memcpy(tx_interval_state, v, strlen(v));
+			process_and_update_tx_telemetry_time(v);
+			AZURE_IOTC_FREE(v);
+			xEventGroupSetBits(xCreatedEventGroup, REPORTING_PERIOD_UPDATE_BIT_MASK);
 		}
 	}
 	else
@@ -447,7 +605,7 @@ void deviceTwinGetCallback(char * propertyName, char * payload, size_t payload_l
 			AZURE_IOTC_FREE(v);
 		}
 	}
-	xEventGroupSetBits(xCreatedEventGroup, LED_UPDATE_BIT_MASK);
+
 	jsobject_free(&object);
 }
 
@@ -1055,7 +1213,7 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
                 memset(cPayload, 0, sizeof(cPayload));
 
                 sprintf(cTopic, AZURE_IOT_MQTT_TWIN_SET_TOPIC, Req_Id++ );
-                sprintf(cPayload, Device_Control_Property_JSON, 0U , 1U, 0U);
+                sprintf(cPayload, Device_Control_Property_JSON, tx_interval_hours , tx_interval_mins, tx_interval_secs);
 
                 xPublishParameters.pucTopic = (const uint8_t *)cTopic;
                 xPublishParameters.pvData = cPayload;
@@ -1258,7 +1416,7 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
     			}
 
     			uxBits = xEventGroupWaitBits(xCreatedEventGroup,
-    										 LED_UPDATE_BIT_MASK | TELEMETRY_PUB_BIT_MASK,
+    										 LED_UPDATE_BIT_MASK | TELEMETRY_PUB_BIT_MASK | REPORTING_PERIOD_UPDATE_BIT_MASK,
 											 pdTRUE,
 											 pdFALSE,
 											 pdMS_TO_TICKS( 120000UL ));
@@ -1266,6 +1424,10 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
     			if( ( uxBits & LED_UPDATE_BIT_MASK ) != 0 )
 				{
 					eAzure_SM_Task = AZURE_SM_PUB_SET_LED_PROPERTIES;
+				}
+				else if( ( uxBits & REPORTING_PERIOD_UPDATE_BIT_MASK ) != 0 )
+				{
+					eAzure_SM_Task = AZURE_SM_PUB_SET_CONTROL_PROPERTIES;
 				}
 				else if( ( uxBits & TELEMETRY_PUB_BIT_MASK ) != 0 )
 				{

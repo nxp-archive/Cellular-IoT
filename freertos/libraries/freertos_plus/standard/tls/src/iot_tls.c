@@ -326,7 +326,7 @@ static int prvCheckCertificate( void * pvCtx,
 }
 
 /*-----------------------------------------------------------*/
-
+#ifndef SAS_KEY
 /**
  * @brief Sign a cryptographic hash with the private key.
  *
@@ -517,7 +517,7 @@ static int prvReadCertificateIntoContext( TLSContext_t * pxTlsContext,
 
     return xResult;
 }
-
+#endif /* #ifndef SAS_KEY */
 /*-----------------------------------------------------------*/
 
 /**
@@ -533,8 +533,10 @@ static int prvInitializeClientCredential( TLSContext_t * pxCtx )
     BaseType_t xResult = CKR_OK;
     CK_SLOT_ID * pxSlotIds = NULL;
     CK_ULONG xCount = 0;
+#ifndef SAS_KEY
     CK_ATTRIBUTE xTemplate[ 2 ];
     mbedtls_pk_type_t xKeyAlgo = ( mbedtls_pk_type_t ) ~0;
+#endif
 #ifdef USE_AWS_CLOUD
     char * pcJitrCertificate = keyJITR_DEVICE_CERTIFICATE_AUTHORITY_PEM;
 #endif
