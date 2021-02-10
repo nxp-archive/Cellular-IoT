@@ -247,4 +247,64 @@ bool topic_check(const char* topic, size_t len, char* str, size_t str_len)
 	return true;
 }
 
+void get_method_name(const char* topic, const char* topic_root, char * sub_topic, size_t sub_topic_size)
+{
+	size_t i;
+
+	if(topic == NULL || topic_root == NULL)	return;
+
+	for (i = 0; i < strlen(topic_root); i++)
+	{
+		if (topic[i] != topic_root[i])		return;
+	}
+
+	for(size_t j = 0; j < sub_topic_size; j++)
+	{
+		/* 0x2F = "/" */
+		if (topic[i] != 0x2F)	sub_topic[j] = topic[i++];
+		else	break;
+	}
+}
+
+int8_t get_rid_from_topic(const char* topic)
+{
+	char ref[] = "?$rid=";
+	size_t j = 0;
+	uint8_t rid = 0;
+
+	for (size_t i = 0; i < strlen(topic); i++)
+	{
+		if (j < 6)
+		{
+			/* Search the following characters: ?$rid= */
+			if(topic[i] == ref[j])
+			{
+				j++;
+			}
+			else
+			{
+				j = 0;
+			}
+		}
+		else
+		{
+			/* We need to take into account that some data can reside after ?$rid=<num>
+			 * e.g. $iothub/methods/POST/device_reboot/?$rid=2nulla0\230,\001 h
+			 * In this example, only the value 2 needs to be taken and the following should be dropped
+			 */
+			if(topic[i] >= 0x30 && topic[i] <= 0x39)
+			{
+				rid *= 10;
+				rid += (topic[i] - 0x30);
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
+	if (rid >= 0)	return rid;
+	else			return -1;	/* Error */
+}
 

@@ -177,6 +177,9 @@ typedef enum AZURE_TWIN_TASK_ST
 	AZURE_SM_PUB_SENSOR_TELEMETRY,
 	AZURE_SM_PUB_LOC_TELEMETRY,
 	AZURE_SM_PUB_CELLULAR_TELEMETRY,
+	AZURE_SM_PUB_DEVICE_REBOOT_RESPONSE,
+	AZURE_SM_WAIT_DEVICE_REBOOT_RESPONSE,
+	AZURE_SM_RESET_SYSTEM,
 	AZURE_SM_IDLE,
 	AZURE_SM_STATES_BNDRY
 }Azure_SM_Task;
@@ -194,10 +197,11 @@ EventGroupHandle_t xCreatedEventGroup;
 TimerHandle_t xTelemetryPublishTimer;
 EventBits_t uxBits;
 bool bIsStartUpPhase = true;
-#define EVENT_BIT_MASK						( 1 << 0 )
-#define LED_UPDATE_BIT_MASK					( 1 << 1 )
-#define TELEMETRY_PUB_BIT_MASK				( 1 << 2 )
-#define REPORTING_PERIOD_UPDATE_BIT_MASK	( 1 << 3 )
+#define EVENT_BIT_MASK							( 1 << 0 )
+#define LED_UPDATE_BIT_MASK						( 1 << 1 )
+#define TELEMETRY_PUB_BIT_MASK					( 1 << 2 )
+#define REPORTING_PERIOD_UPDATE_BIT_MASK		( 1 << 3 )
+#define DEVICE_REBOOT_METHOD_UPDATE_BIT_MASK	( 1 << 4 )
 
 #if defined(BOARD_ACCEL_FXOS) || defined(BOARD_ACCEL_MMA)
 /* Actual state of accelerometer */
@@ -237,7 +241,18 @@ char* username;
 char* password;
 char* operation_id;
 
+uint8_t recv_req_id;
+char status[5];
 
+__STATIC_INLINE void RESET_SystemReset(void)
+{
+  __DSB();                                                     	/* Ensure all outstanding memory accesses included
+                                                              	   buffered write are completed before reset */
+  PMC->RESETCTRL = PMC_RESETCTRL_SWRRESETENABLE_MASK;			/* Enable SWR_RESET */
+  SYSCON->SWR_RESET = SYSCON_SWR_RESET_SWR_RESET(0x5A000001);	/* Write the reset value in SWR_RESET register */
+  __DSB();                                                     	/* Ensure completion of memory access */
+  while(1);                                                    	/* wait until reset */
+}
 
 #if defined(BOARD_ACCEL_FXOS) || defined(BOARD_ACCEL_MMA)
 /*!
@@ -609,6 +624,109 @@ void deviceTwinGetCallback(char * propertyName, char * payload, size_t payload_l
 	jsobject_free(&object);
 }
 
+void methodSetGetCallback(char * propertyName, char * payload, size_t payload_len)
+{
+	jsobject_t object;
+	jsobject_initialize(&object, payload, payload_len);
+
+	if (strcmp(propertyName, "rgb_red") == 0)
+	{
+		char* v = jsobject_get_data_by_name(&object, "rgb_red");
+		if(v)
+		{
+			AZURE_PRINTF(("==> Received a 'RED LED' update! New Value => %s\n", v));
+		    memset(red_led_state, 0, sizeof(red_led_state));
+			memcpy(red_led_state, v, strlen(v));
+			if(strcmp(red_led_state, "true") == 0)
+			{
+				turnOnLed(RED_LED_ID);
+			}
+			else if(strcmp(red_led_state, "false") == 0)
+			{
+				turnOffLed(RED_LED_ID);
+			}
+			else
+			{
+				/* Do nothing */
+			}
+			AZURE_IOTC_FREE(v);
+			xEventGroupSetBits(xCreatedEventGroup, LED_UPDATE_BIT_MASK);
+		}
+	}
+	else if (strcmp(propertyName, "rgb_green") == 0)
+	{
+		char* v = jsobject_get_data_by_name(&object, "rgb_green");
+		if(v)
+		{
+			AZURE_PRINTF(("==> Received a 'GREEN LED' update! New Value => %s\n", v));
+		    memset(green_led_state, 0, sizeof(green_led_state));
+			memcpy(green_led_state, v, strlen(v));
+			if(strcmp(green_led_state, "true") == 0)
+			{
+				turnOnLed(GREEN_LED_ID);
+			}
+			else if(strcmp(green_led_state, "false") == 0)
+			{
+				turnOffLed(GREEN_LED_ID);
+			}
+			else
+			{
+				/* Do nothing */
+			}
+			AZURE_IOTC_FREE(v);
+			xEventGroupSetBits(xCreatedEventGroup, LED_UPDATE_BIT_MASK);
+		}
+	}
+	else if (strcmp(propertyName, "rgb_blue") == 0)
+	{
+		char* v = jsobject_get_data_by_name(&object, "rgb_blue");
+		if(v)
+		{
+			AZURE_PRINTF(("==> Received a 'BLUE LED' update! New Value => %s\n", v));
+		    memset(blue_led_state, 0, sizeof(blue_led_state));
+			memcpy(blue_led_state, v, strlen(v));
+			if(strcmp(blue_led_state, "true") == 0)
+			{
+				turnOnLed(BLUE_LED_ID);
+			}
+			else if(strcmp(blue_led_state, "false") == 0)
+			{
+				turnOffLed(BLUE_LED_ID);
+			}
+			else
+			{
+				/* Do nothing */
+			}
+			AZURE_IOTC_FREE(v);
+			xEventGroupSetBits(xCreatedEventGroup, LED_UPDATE_BIT_MASK);
+		}
+	}
+	else if (strcmp(propertyName, "tx_interval") == 0)
+	{
+		char* v = jsobject_get_data_by_name(&object, "tx_interval");
+		if(v)
+		{
+			AZURE_PRINTF(("==> Received a 'TX Interval' update! New Value => %s\n", v));
+		    memset(tx_interval_state, 0, sizeof(tx_interval_state));
+			memcpy(tx_interval_state, v, strlen(v));
+			process_and_update_tx_telemetry_time(v);
+			AZURE_IOTC_FREE(v);
+			xEventGroupSetBits(xCreatedEventGroup, REPORTING_PERIOD_UPDATE_BIT_MASK);
+		}
+	}
+	else
+	{
+		char* v = jsobject_get_data_by_name(&object, propertyName);
+		if (v)
+		{
+			AZURE_PRINTF(("==> %s: %s\n", propertyName, v));
+			AZURE_IOTC_FREE(v);
+		}
+	}
+
+	jsobject_free(&object);
+}
+
 MQTTBool_t Azure_IoT_CallBack(void * pvPublishCallbackContext,
         							const MQTTPublishData_t * const pxPublishData )
 {
@@ -656,7 +774,7 @@ MQTTBool_t Azure_IoT_CallBack(void * pvPublishCallbackContext,
 						)
 		     )
 	{
-		/* Device Twin Get received */
+		/* Device Twin Get/Set received */
 		AZURE_PRINTF(("Received a SettingsUpdated event\n"));
 		jsobject_t desired;
 		jsobject_initialize(&desired, msg, msg_length);
@@ -671,6 +789,43 @@ MQTTBool_t Azure_IoT_CallBack(void * pvPublishCallbackContext,
 			if (itemName) AZURE_IOTC_FREE(itemName);
 		}
 		jsobject_free(&desired);
+	}
+
+	else if (topic_check("$iothub/methods/POST/",
+						 strlen("$iothub/methods/POST/"),
+						 topic,
+						 topic_length
+						)
+		     )
+	{
+		/* Method Get/Set received */
+		AZURE_PRINTF(("Received a Method event\n"));
+
+		char * method_name = AZURE_IOTC_MALLOC(BUFFER_SIZE_128);
+		memset(method_name, 0, sizeof(method_name));
+
+		(void) get_method_name(topic, "$iothub/methods/POST/", method_name, BUFFER_SIZE_128);
+
+		if (method_name != NULL && topic_check("device_reboot", strlen("device_reboot"), method_name, strlen(method_name)))
+		{
+			recv_req_id = get_rid_from_topic(topic);
+			memset(status, 0, sizeof(status));
+
+			if (-1 != recv_req_id)
+			{
+				/* Set status to 0 */
+				status[0] = 0x30;
+				xEventGroupSetBits(xCreatedEventGroup, DEVICE_REBOOT_METHOD_UPDATE_BIT_MASK);
+			}
+			else
+			{
+				/* Set status to error -1 */
+				status[0] = 0x2D;
+				status[1] = 0x31;
+			}
+		}
+		AZURE_IOTC_FREE(method_name);
+
 	}
 
 	xEventGroupSetBits(xCreatedEventGroup, EVENT_BIT_MASK);
@@ -1409,6 +1564,61 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
 
 				break;
 
+    		case AZURE_SM_PUB_DEVICE_REBOOT_RESPONSE:
+				vTaskDelay(pdMS_TO_TICKS(1000));
+
+				memset(&(xPublishParameters), 0x00, sizeof(xPublishParameters));
+				memset(cTopic, 0, sizeof(cTopic));
+				memset(cPayload, 0, sizeof(cPayload));
+
+                sprintf(cTopic, AZURE_IOT_METHOD_TOPIC_FOR_PUB, status, recv_req_id);
+				sprintf(cPayload, Device_Cellular_Telemetry_JSON, mcc , mnc, lac, cid, iccid, imei, modem_fw, device_id);
+
+				xPublishParameters.pucTopic = (const uint8_t *)cTopic;
+				xPublishParameters.pvData = cPayload;
+				xPublishParameters.usTopicLength = (uint16_t)strlen(cTopic);
+				xPublishParameters.ulDataLength = strlen(cPayload);
+				xPublishParameters.xQoS = eMQTTQoS0;
+
+				if( MQTT_AGENT_Publish(xMQTTHandle, &xPublishParameters, AzureTwinDemoTIMEOUT) == eMQTTAgentSuccess )
+				{
+					AZURE_PRINTF( ("Successfully Publish to DEVICE_REBOOT Topic\r\n"));
+					eAzure_SM_Task = AZURE_SM_WAIT_DEVICE_REBOOT_RESPONSE;
+				}
+				else
+				{
+					AZURE_PRINTF( ("Unsuccessfully Publish to DEVICE_REBOOT Topic\r\n"));
+					AZURE_PRINTF( ("Disconnect\r\n"));
+					MQTT_AGENT_Disconnect(xMQTTHandle, AzureTwinDemoTIMEOUT);
+					eAzure_SM_Task = AZURE_SM_STATES_BNDRY;
+				}
+
+				break;
+
+    		case AZURE_SM_WAIT_DEVICE_REBOOT_RESPONSE:
+
+    			if( xEventGroupWaitBits(xCreatedEventGroup, EVENT_BIT_MASK, pdTRUE, pdFALSE, AzureTwinDemoTIMEOUT) == EVENT_BIT_MASK )
+    			{
+    				AZURE_PRINTF ( ("Got response from AZURE_SM_PUB_DEVICE_REBOOT_RESPONSE state\n") );
+    			}
+    			else
+    			{
+    				eAzure_SM_Task = AZURE_SM_PUB_DEVICE_REBOOT_RESPONSE;
+    				AZURE_PRINTF ( ("No response received for AZURE_SM_PUB_DEVICE_REBOOT_RESPONSE state\n") );
+    				vTaskDelay(pdMS_TO_TICKS(2000));
+    			}
+
+    			eAzure_SM_Task = AZURE_SM_RESET_SYSTEM;
+    			break;
+
+    		case AZURE_SM_RESET_SYSTEM:
+
+    			/* Wait for several seconds to give time to the Cellular module
+    			 * to finish the transaction before triggering the reset */
+    			vTaskDelay(pdMS_TO_TICKS(2000));
+    			RESET_SystemReset();
+    			break;
+
     		case AZURE_SM_IDLE:
     			if( xTimerIsTimerActive( xTelemetryPublishTimer ) == pdFALSE )
     			{
@@ -1416,7 +1626,7 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
     			}
 
     			uxBits = xEventGroupWaitBits(xCreatedEventGroup,
-    										 LED_UPDATE_BIT_MASK | TELEMETRY_PUB_BIT_MASK | REPORTING_PERIOD_UPDATE_BIT_MASK,
+    										 LED_UPDATE_BIT_MASK | TELEMETRY_PUB_BIT_MASK | REPORTING_PERIOD_UPDATE_BIT_MASK | DEVICE_REBOOT_METHOD_UPDATE_BIT_MASK,
 											 pdTRUE,
 											 pdFALSE,
 											 pdMS_TO_TICKS( 120000UL ));
@@ -1428,6 +1638,10 @@ void prvmcsft_Azure_TwinTask( void * pvParameters )
 				else if( ( uxBits & REPORTING_PERIOD_UPDATE_BIT_MASK ) != 0 )
 				{
 					eAzure_SM_Task = AZURE_SM_PUB_SET_CONTROL_PROPERTIES;
+				}
+				else if( ( uxBits & DEVICE_REBOOT_METHOD_UPDATE_BIT_MASK ) != 0 )
+				{
+					eAzure_SM_Task = AZURE_SM_PUB_DEVICE_REBOOT_RESPONSE;
 				}
 				else if( ( uxBits & TELEMETRY_PUB_BIT_MASK ) != 0 )
 				{

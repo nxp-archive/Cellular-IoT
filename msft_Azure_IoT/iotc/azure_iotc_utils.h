@@ -48,5 +48,7 @@
 void generateSasToken(char** ptr_buffer, char* scope_id, size_t scope_id_length, char* device_id, size_t device_id_length, char* key, size_t key_length);
 void getUsernameAndPassword(char** ptr_username, char** ptr_password, char* device_id, size_t device_id_length, char* host_name, size_t host_name_length, char* key, size_t key_length);
 bool topic_check(const char* topic, size_t len, char* str, size_t str_len);
+void get_method_name(const char* topic, const char* topic_root, char * sub_topic, size_t sub_topic_size);
+int8_t get_rid_from_topic(const char* topic);
 
 #endif /* IOTC_AZURE_IOTC_UTILS_H_ */
