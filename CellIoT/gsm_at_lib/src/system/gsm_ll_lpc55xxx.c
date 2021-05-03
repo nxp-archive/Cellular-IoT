@@ -149,7 +149,7 @@ usart_ll_thread(void * arg) {
             }
         }
 
-        if ( NULL != gsm.m.ring_list->first_ring)
+        if (NULL != gsm.m.ring_list && NULL != gsm.m.ring_list->first_ring)
         {
         	timeout = pdMS_TO_TICKS(100);
         	if(!gsm.m.ring_list->is_at_sqnsrecv_ongoing)
@@ -211,7 +211,7 @@ configure_uart(uint32_t baudrate) {
 	}
 }
 
-#if defined(GSM_RESET_PIN)
+#if 0 && defined(GSM_RESET_PIN)
 /**
  * \brief           Hardware reset callback
  */
@@ -289,13 +289,14 @@ gsm_ll_init(gsm_ll_t* ll) {
 #endif /* !GSM_CFG_MEM_CUSTOM */
 
     if (!initialized) {
-        ll->send_fn = send_data;                /* Set callback function to send data */
+        ll->send_fn = send_data;                	/* Set callback function to send data */
 #if defined(GSM_RESET_PIN)
-        ll->reset_fn = reset_device;            /* Set callback for hardware reset */
+        ll->reset_fn = CELLIOTSHIELD_ResetModem;	/* Set callback for hardware reset */
 #endif /* defined(GSM_RESET_PIN) */
+        ll->hardware_reset_attempt = 0;
     }
 
-    configure_uart(ll->uart.baudrate);          /* Initialize UART for communication */
+    configure_uart(ll->uart.baudrate);          	/* Initialize UART for communication */
     initialized = 1;
     return gsmOK;
 }

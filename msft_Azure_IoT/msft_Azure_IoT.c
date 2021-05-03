@@ -606,7 +606,7 @@ void deviceTwinGetCallback(char * propertyName, char * payload, size_t payload_l
 			AZURE_PRINTF(("==> Received a 'TX Interval' update! New Value => %s\n", v));
 		    memset(tx_interval_state, 0, sizeof(tx_interval_state));
 			memcpy(tx_interval_state, v, strlen(v));
-			process_and_update_tx_telemetry_time(v);
+			process_and_update_tx_telemetry_time(tx_interval_state);
 			AZURE_IOTC_FREE(v);
 			xEventGroupSetBits(xCreatedEventGroup, REPORTING_PERIOD_UPDATE_BIT_MASK);
 		}

@@ -51,7 +51,7 @@ static uint8_t ring_recv = 0;
 static uint32_t bytes_to_read = 0;
 static uint8_t sqnsrecv_conn_id;
 static uint32_t sqnsrecv_bytes_pending;
-static gsmr_t gsmi_process_sub_cmd(gsm_msg_t* msg, uint8_t* is_ok, uint16_t* is_error);
+static gsmr_t gsmi_process_sub_cmd(gsm_msg_t* msg, uint8_t* is_ok, uint16_t* is_error, uint8_t* is_sysstart);
 
 /**
  * \brief           Memory mapping
@@ -839,6 +839,7 @@ static void
 gsmi_parse_received(gsm_recv_t* rcv) {
     uint8_t is_ok = 0;
     uint16_t is_error = 0;
+    uint8_t is_sysstart = 0;
     static eRxProcessingStage rxDataStage = NO_DATA_PENDING;
 
     /* Try to remove non-parsable strings */
@@ -963,6 +964,11 @@ gsmi_parse_received(gsm_recv_t* rcv) {
 		{
 			// can be parsed to check the connection ID.
 			is_ok = 1;
+		}
+		else if( !strncmp(rcv->data, "+SYSSTART", 9) )
+		{
+			/* Special case for +SYSSTART events */
+			is_sysstart = 1;
 		}
 #endif /* GSM_SEQUANS_SPECIFIC_CMD */
 
@@ -1316,10 +1322,10 @@ gsmi_parse_received(gsm_recv_t* rcv) {
      * In case of any of these events, simply release semaphore
      * and proceed with next command
      */
-    if (is_ok || is_error) {
+    if (is_ok || is_error || is_sysstart) {
         gsmr_t res = gsmOK;
         if (gsm.msg != NULL) {                  /* Do we have active message? */
-            res = gsmi_process_sub_cmd(gsm.msg, &is_ok, &is_error);
+            res = gsmi_process_sub_cmd(gsm.msg, &is_ok, &is_error, &is_sysstart);
             if (res != gsmCONT) {               /* Shall we continue with next subcommand under this one? */
                 if (is_ok) {                    /* Check OK status */
                     res = gsm.msg->res = gsmOK;
@@ -1752,7 +1758,7 @@ gsmi_process(const void* data, size_t data_len) {
  * \return          \ref gsmCONT if you sent more data and we need to process more data, \ref gsmOK on success, or \ref gsmERR on error
  */
 static gsmr_t
-gsmi_process_sub_cmd(gsm_msg_t* msg, uint8_t* is_ok, uint16_t* is_error) {
+gsmi_process_sub_cmd(gsm_msg_t* msg, uint8_t* is_ok, uint16_t* is_error, uint8_t* is_sysstart) {
     gsm_cmd_t n_cmd = GSM_CMD_IDLE;
     if (CMD_IS_DEF(GSM_CMD_RESET)) {
         switch (CMD_GET_CUR()) {                /* Check current command */
@@ -2077,17 +2083,23 @@ gsmr_t
 gsmi_initiate_cmd(gsm_msg_t* msg) {
     switch (CMD_GET_CUR()) {                    /* Check current message we want to send over AT */
         case GSM_CMD_RESET: {                   /* Reset modem with AT commands */
-            /* Try with hardware reset */
-            if (gsm.ll.reset_fn != NULL && gsm.ll.reset_fn(1)) {
-                gsm_delay(2);
-                gsm.ll.reset_fn(0);
-                gsm_delay(500);
-            }
 
-            /* Send manual AT command */
-            AT_PORT_SEND_BEGIN_AT();
-            AT_PORT_SEND_CONST_STR("+CFUN=1,1");
-            AT_PORT_SEND_END_AT();
+            if (gsm.ll.hardware_reset_attempt == 0)
+            {
+            	/* Send manual AT command */
+				AT_PORT_SEND_BEGIN_AT();
+				AT_PORT_SEND_CONST_STR("+CFUN=1,1");
+				AT_PORT_SEND_END_AT();
+            }
+            else if (gsm.ll.reset_fn != NULL && gsm.ll.hardware_reset_attempt == 1)
+            {
+            	/* Try with hardware reset */
+            	gsm.ll.reset_fn();
+            }
+            else
+            {
+            	/* No Action Required */
+            }
             break;
         }
         case GSM_CMD_RESET_DEVICE_FIRST_CMD: {  /* First command for device driver specific reset */

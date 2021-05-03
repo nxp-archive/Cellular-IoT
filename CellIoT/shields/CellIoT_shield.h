@@ -47,5 +47,6 @@ int CELLIOTSHIELD_Init( uint32_t baudrate );
 int CELLIOTSHIELD_USARTConfig( uint32_t baudrate );
 int CELLIOTSHIELD_DMAConfig( void );
 int CELLIOTSHIELD_TimerConfig( void );
+void CELLIOTSHIELD_ResetModem(void);
 
 #endif

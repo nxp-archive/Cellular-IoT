@@ -21,7 +21,7 @@ product: Clocks v7.0
 processor: LPC55S69
 package_id: LPC55S69JBD100
 mcu_data: ksdk2_0
-processor_version: 7.0.1
+processor_version: 8.0.3
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
@@ -84,7 +84,17 @@ void BOARD_BootClockFRO12M(void)
     CLOCK_SetFLASHAccessCyclesForFreq(12000000U);          /*!< Set FLASH wait states for core */
 
     /*!< Set up dividers */
+    CLOCK_SetClkDiv(kCLOCK_DivArmTrClkDiv, 0U, true);               /*!< Reset TRACECLKDIV divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivArmTrClkDiv, 1U, false);         /*!< Set TRACECLKDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk0, 0U, true);               /*!< Reset SYSTICKCLKDIV0 divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk0, 1U, false);         /*!< Set SYSTICKCLKDIV0 divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk1, 0U, true);               /*!< Reset SYSTICKCLKDIV1 divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk1, 1U, false);         /*!< Set SYSTICKCLKDIV1 divider to value 1 */
     CLOCK_SetClkDiv(kCLOCK_DivAhbClk, 1U, false);         /*!< Set AHBCLKDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivAhbClk, 0U, true);               /*!< Reset AHBCLKDIV divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivAhbClk, 1U, false);         /*!< Set AHBCLKDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivFrohfClk, 0U, true);               /*!< Reset FROHFDIV divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivFrohfClk, 1U, false);         /*!< Set FROHFDIV divider to value 1 */
 
     /*!< Set up clock selectors - Attach clocks to the peripheries */
     CLOCK_AttachClk(kFRO12M_to_MAIN_CLK);                 /*!< Switch MAIN_CLK to FRO12M */
@@ -133,7 +143,17 @@ void BOARD_BootClockFROHF96M(void)
     CLOCK_SetFLASHAccessCyclesForFreq(96000000U);          /*!< Set FLASH wait states for core */
 
     /*!< Set up dividers */
+    CLOCK_SetClkDiv(kCLOCK_DivArmTrClkDiv, 0U, true);               /*!< Reset TRACECLKDIV divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivArmTrClkDiv, 1U, false);         /*!< Set TRACECLKDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk0, 0U, true);               /*!< Reset SYSTICKCLKDIV0 divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk0, 1U, false);         /*!< Set SYSTICKCLKDIV0 divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk1, 0U, true);               /*!< Reset SYSTICKCLKDIV1 divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk1, 1U, false);         /*!< Set SYSTICKCLKDIV1 divider to value 1 */
     CLOCK_SetClkDiv(kCLOCK_DivAhbClk, 1U, false);         /*!< Set AHBCLKDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivAhbClk, 0U, true);               /*!< Reset AHBCLKDIV divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivAhbClk, 1U, false);         /*!< Set AHBCLKDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivFrohfClk, 0U, true);               /*!< Reset FROHFDIV divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivFrohfClk, 1U, false);         /*!< Set FROHFDIV divider to value 1 */
 
     /*!< Set up clock selectors - Attach clocks to the peripheries */
     CLOCK_AttachClk(kFRO_HF_to_MAIN_CLK);                 /*!< Switch MAIN_CLK to FRO_HF */
@@ -210,7 +230,19 @@ void BOARD_BootClockPLL100M(void)
     CLOCK_SetPLL0Freq(&pll0Setup);                       /*!< Configure PLL0 to the desired values */
 
     /*!< Set up dividers */
+    CLOCK_SetClkDiv(kCLOCK_DivArmTrClkDiv, 0U, true);               /*!< Reset TRACECLKDIV divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivArmTrClkDiv, 1U, false);         /*!< Set TRACECLKDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk0, 0U, true);               /*!< Reset SYSTICKCLKDIV0 divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk0, 1U, false);         /*!< Set SYSTICKCLKDIV0 divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk1, 0U, true);               /*!< Reset SYSTICKCLKDIV1 divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivSystickClk1, 1U, false);         /*!< Set SYSTICKCLKDIV1 divider to value 1 */
     CLOCK_SetClkDiv(kCLOCK_DivAhbClk, 1U, false);         /*!< Set AHBCLKDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivAhbClk, 0U, true);               /*!< Reset AHBCLKDIV divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivAhbClk, 1U, false);         /*!< Set AHBCLKDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivFrohfClk, 0U, true);               /*!< Reset FROHFDIV divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivFrohfClk, 1U, false);         /*!< Set FROHFDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivPll0Clk, 0U, true);               /*!< Reset PLL0DIV divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivPll0Clk, 1U, false);         /*!< Set PLL0DIV divider to value 1 */
 
     /*!< Set up clock selectors - Attach clocks to the peripheries */
     CLOCK_AttachClk(kPLL0_to_MAIN_CLK);                 /*!< Switch MAIN_CLK to PLL0 */

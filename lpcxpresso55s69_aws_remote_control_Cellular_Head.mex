@@ -22,18 +22,14 @@
             <file path="board/pin_mux.h" update_enabled="true"/>
          </generated_project_files>
          <pins_profile>
-            <processor_version>8.0.0</processor_version>
+            <processor_version>8.0.3</processor_version>
             <pin_labels>
-               <pin_label pin_num="10" pin_signal="PIO1_9/FC1_SCK/CT_INP4/SCT0_OUT2/FC4_CTS_SDA_SSEL0/ADC0_12" label="IQR"/>
-               <pin_label pin_num="14" pin_signal="PIO0_16/FC4_TXD_SCL_MISO_WS/CLKOUT/CT_INP4/SECURE_GPIO0_16/ADC0_8" label="KFETON" identifier="KFETON_ID"/>
-               <pin_label pin_num="31" pin_signal="PIO1_5/FC0_RXD_SDA_MOSI_DATA/SD0_D2/CTIMER2_MAT0/SCT_GPI0" label="PWRON" identifier="PWRON_ID"/>
-               <pin_label pin_num="64" pin_signal="PIO1_18/SD1_POW_EN/SCT0_OUT5/PLU_OUT0" label="IRQ" identifier="IRQ_ID"/>
                <pin_label pin_num="27" pin_signal="PIO0_27/FC2_TXD_SCL_MISO_WS/CTIMER3_MAT2/SCT0_OUT6/FC7_RXD_SDA_MOSI_DATA/PLU_OUT0/SECURE_GPIO0_27" label="USART2 TX"/>
                <pin_label pin_num="3" pin_signal="PIO1_24/FC2_RXD_SDA_MOSI_DATA/SCT0_OUT1/SD1_D1/FC3_SSEL3/PLU_OUT6" label="USART2 RX"/>
                <pin_label pin_num="68" pin_signal="PIO1_26/FC2_CTS_SDA_SSEL0/SCT0_OUT3/CT_INP3/UTICK_CAP1/HS_SPI_SSEL3/PLU_IN5" label="USART2 CTS"/>
                <pin_label pin_num="85" pin_signal="PIO1_27/FC2_RTS_SCL_SSEL1/SD0_D4/CTIMER0_MAT3/CLKOUT/PLU_IN4" label="USART2 RTS"/>
-               <pin_label pin_num="56" pin_signal="PIO0_18/FC4_CTS_SDA_SSEL0/SD0_WR_PRT/CTIMER1_MAT0/SCT0_OUT1/PLU_IN3/SECURE_GPIO0_18/ACMP0_C" label="SKY_nRESET"/>
-               <pin_label pin_num="40" pin_signal="PIO1_10/FC1_RXD_SDA_MOSI_DATA/CTIMER1_MAT0/SCT0_OUT3" label="SKY_RING"/>
+               <pin_label pin_num="56" pin_signal="PIO0_18/FC4_CTS_SDA_SSEL0/SD0_WR_PRT/CTIMER1_MAT0/SCT0_OUT1/PLU_IN3/SECURE_GPIO0_18/ACMP0_C" label="SKY_nRESET" identifier="SKY_nRESET_ID"/>
+               <pin_label pin_num="40" pin_signal="PIO1_10/FC1_RXD_SDA_MOSI_DATA/CTIMER1_MAT0/SCT0_OUT3" label="SKY_RING" identifier="SKY_RING_ID"/>
             </pin_labels>
          </pins_profile>
          <functions_list>
@@ -109,182 +105,6 @@
                   </pin>
                </pins>
             </function>
-            <function name="BOARD_InitGT202Shield">
-               <description>Configures pin routing and optionally pin electrical features.</description>
-               <options>
-                  <callFromInitBoot>false</callFromInitBoot>
-                  <coreID>cm33_core0</coreID>
-                  <enableClock>true</enableClock>
-               </options>
-               <dependencies>
-                  <dependency resourceType="Peripheral" resourceId="FLEXCOMM8" description="Peripheral FLEXCOMM8 is not initialized" problem_level="1" source="Pins:BOARD_InitGT202Shield">
-                     <feature name="initialized" evaluation="equal">
-                        <data>true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Pins initialization requires the COMMON Driver in the project." problem_level="2" source="Pins:BOARD_InitGT202Shield">
-                     <feature name="enabled" evaluation="equal" configuration="cm33_core1">
-                        <data>true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.lpc_gpio" description="Pins initialization requires the LPC_GPIO Driver in the project." problem_level="2" source="Pins:BOARD_InitGT202Shield">
-                     <feature name="enabled" evaluation="equal" configuration="cm33_core1">
-                        <data>true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.lpc_iocon" description="Pins initialization requires the LPC_IOCON Driver in the project." problem_level="2" source="Pins:BOARD_InitGT202Shield">
-                     <feature name="enabled" evaluation="equal" configuration="cm33_core1">
-                        <data>true</data>
-                     </feature>
-                  </dependency>
-               </dependencies>
-               <pins>
-                  <pin peripheral="FLEXCOMM8" signal="HS_SPI_MISO" pin_num="62" pin_signal="PIO1_3/SCT0_OUT4/HS_SPI_MISO/USB0_PORTPWRN/PLU_OUT6">
-                     <pin_features>
-                        <pin_feature name="mode" value="inactive"/>
-                        <pin_feature name="slew_rate" value="fast"/>
-                        <pin_feature name="invert" value="disabled"/>
-                        <pin_feature name="open_drain" value="disabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="FLEXCOMM8" signal="HS_SPI_MOSI" pin_num="60" pin_signal="PIO0_26/FC2_RXD_SDA_MOSI_DATA/CLKOUT/CT_INP14/SCT0_OUT5/USB0_IDVALUE/FC0_SCK/HS_SPI_MOSI/SECURE_GPIO0_26">
-                     <pin_features>
-                        <pin_feature name="mode" value="inactive"/>
-                        <pin_feature name="slew_rate" value="fast"/>
-                        <pin_feature name="invert" value="disabled"/>
-                        <pin_feature name="open_drain" value="disabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="FLEXCOMM8" signal="HS_SPI_SCK" pin_num="61" pin_signal="PIO1_2/CTIMER0_MAT3/SCT_GPI6/HS_SPI_SCK/USB1_PORTPWRN/PLU_OUT5">
-                     <pin_features>
-                        <pin_feature name="mode" value="inactive"/>
-                        <pin_feature name="slew_rate" value="fast"/>
-                        <pin_feature name="invert" value="disabled"/>
-                        <pin_feature name="open_drain" value="disabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="FLEXCOMM8" signal="HS_SPI_SSEL1" pin_num="59" pin_signal="PIO1_1/FC3_RXD_SDA_MOSI_DATA/CT_INP3/SCT_GPI5/HS_SPI_SSEL1/USB1_OVERCURRENTN/PLU_OUT4">
-                     <pin_features>
-                        <pin_feature name="mode" value="inactive"/>
-                        <pin_feature name="slew_rate" value="fast"/>
-                        <pin_feature name="invert" value="disabled"/>
-                        <pin_feature name="open_drain" value="disabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="GPIO" signal="PIO1, 8" pin_num="24" pin_signal="PIO1_8/FC0_CTS_SDA_SSEL0/SD0_CLK/SCT0_OUT1/FC4_SSEL2/ADC0_4">
-                     <pin_features>
-                        <pin_feature name="direction" value="OUTPUT"/>
-                        <pin_feature name="gpio_init_state" value="true"/>
-                        <pin_feature name="mode" value="pullDown"/>
-                        <pin_feature name="slew_rate" value="standard"/>
-                        <pin_feature name="invert" value="disabled"/>
-                        <pin_feature name="open_drain" value="disabled"/>
-                        <pin_feature name="asw" value="disabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="GPIO" signal="PIO1, 9" pin_num="10" pin_signal="PIO1_9/FC1_SCK/CT_INP4/SCT0_OUT2/FC4_CTS_SDA_SSEL0/ADC0_12">
-                     <pin_features>
-                        <pin_feature name="direction" value="INPUT"/>
-                        <pin_feature name="mode" value="pullUp"/>
-                        <pin_feature name="slew_rate" value="standard"/>
-                        <pin_feature name="invert" value="disabled"/>
-                        <pin_feature name="open_drain" value="disabled"/>
-                        <pin_feature name="asw" value="disabled"/>
-                     </pin_features>
-                  </pin>
-               </pins>
-            </function>
-            <function name="BOARD_InitSilex2401Shield">
-               <description>Configures pin routing and optionally pin electrical features.</description>
-               <options>
-                  <callFromInitBoot>false</callFromInitBoot>
-                  <coreID>cm33_core0</coreID>
-                  <enableClock>true</enableClock>
-               </options>
-               <dependencies>
-                  <dependency resourceType="Peripheral" resourceId="FLEXCOMM8" description="Peripheral FLEXCOMM8 is not initialized" problem_level="1" source="Pins:BOARD_InitSilex2401Shield">
-                     <feature name="initialized" evaluation="equal">
-                        <data>true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Pins initialization requires the COMMON Driver in the project." problem_level="2" source="Pins:BOARD_InitSilex2401Shield">
-                     <feature name="enabled" evaluation="equal" configuration="cm33_core1">
-                        <data>true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.lpc_gpio" description="Pins initialization requires the LPC_GPIO Driver in the project." problem_level="2" source="Pins:BOARD_InitSilex2401Shield">
-                     <feature name="enabled" evaluation="equal" configuration="cm33_core1">
-                        <data>true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="SWComponent" resourceId="platform.drivers.lpc_iocon" description="Pins initialization requires the LPC_IOCON Driver in the project." problem_level="2" source="Pins:BOARD_InitSilex2401Shield">
-                     <feature name="enabled" evaluation="equal" configuration="cm33_core1">
-                        <data>true</data>
-                     </feature>
-                  </dependency>
-               </dependencies>
-               <pins>
-                  <pin peripheral="FLEXCOMM8" signal="HS_SPI_MISO" pin_num="62" pin_signal="PIO1_3/SCT0_OUT4/HS_SPI_MISO/USB0_PORTPWRN/PLU_OUT6">
-                     <pin_features>
-                        <pin_feature name="mode" value="inactive"/>
-                        <pin_feature name="slew_rate" value="fast"/>
-                        <pin_feature name="invert" value="disabled"/>
-                        <pin_feature name="open_drain" value="disabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="FLEXCOMM8" signal="HS_SPI_SCK" pin_num="61" pin_signal="PIO1_2/CTIMER0_MAT3/SCT_GPI6/HS_SPI_SCK/USB1_PORTPWRN/PLU_OUT5">
-                     <pin_features>
-                        <pin_feature name="mode" value="inactive"/>
-                        <pin_feature name="slew_rate" value="fast"/>
-                        <pin_feature name="invert" value="disabled"/>
-                        <pin_feature name="open_drain" value="disabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="FLEXCOMM8" signal="HS_SPI_MOSI" pin_num="60" pin_signal="PIO0_26/FC2_RXD_SDA_MOSI_DATA/CLKOUT/CT_INP14/SCT0_OUT5/USB0_IDVALUE/FC0_SCK/HS_SPI_MOSI/SECURE_GPIO0_26">
-                     <pin_features>
-                        <pin_feature name="mode" value="inactive"/>
-                        <pin_feature name="slew_rate" value="fast"/>
-                        <pin_feature name="invert" value="disabled"/>
-                        <pin_feature name="open_drain" value="disabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="FLEXCOMM8" signal="HS_SPI_SSEL1" pin_num="59" pin_signal="PIO1_1/FC3_RXD_SDA_MOSI_DATA/CT_INP3/SCT_GPI5/HS_SPI_SSEL1/USB1_OVERCURRENTN/PLU_OUT4">
-                     <pin_features>
-                        <pin_feature name="mode" value="inactive"/>
-                        <pin_feature name="slew_rate" value="fast"/>
-                        <pin_feature name="invert" value="disabled"/>
-                        <pin_feature name="open_drain" value="disabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="GPIO" signal="PIO0, 16" pin_num="14" pin_signal="PIO0_16/FC4_TXD_SCL_MISO_WS/CLKOUT/CT_INP4/SECURE_GPIO0_16/ADC0_8">
-                     <pin_features>
-                        <pin_feature name="direction" value="OUTPUT"/>
-                        <pin_feature name="mode" value="pullDown"/>
-                        <pin_feature name="slew_rate" value="standard"/>
-                        <pin_feature name="invert" value="disabled"/>
-                        <pin_feature name="open_drain" value="disabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="GPIO" signal="PIO1, 5" pin_num="31" pin_signal="PIO1_5/FC0_RXD_SDA_MOSI_DATA/SD0_D2/CTIMER2_MAT0/SCT_GPI0">
-                     <pin_features>
-                        <pin_feature name="direction" value="OUTPUT"/>
-                        <pin_feature name="mode" value="pullDown"/>
-                        <pin_feature name="slew_rate" value="standard"/>
-                        <pin_feature name="invert" value="disabled"/>
-                        <pin_feature name="open_drain" value="disabled"/>
-                     </pin_features>
-                  </pin>
-                  <pin peripheral="GPIO" signal="PIO1, 18" pin_num="64" pin_signal="PIO1_18/SD1_POW_EN/SCT0_OUT5/PLU_OUT0">
-                     <pin_features>
-                        <pin_feature name="direction" value="INPUT"/>
-                        <pin_feature name="mode" value="pullUp"/>
-                        <pin_feature name="slew_rate" value="standard"/>
-                        <pin_feature name="invert" value="disabled"/>
-                        <pin_feature name="open_drain" value="disabled"/>
-                     </pin_features>
-                  </pin>
-               </pins>
-            </function>
             <function name="BOARD_InitMonarchGoArduinoShield">
                <description>Configures pin routing and optionally pin electrical features.</description>
                <options>
@@ -303,14 +123,29 @@
                         <data>true</data>
                      </feature>
                   </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.lpc_gpio" description="Pins initialization requires the LPC_GPIO Driver in the project." problem_level="2" source="Pins:BOARD_InitMonarchGoArduinoShield">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core1">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
                </dependencies>
                <pins>
                   <pin peripheral="FLEXCOMM2" signal="TXD_SCL_MISO_WS" pin_num="27" pin_signal="PIO0_27/FC2_TXD_SCL_MISO_WS/CTIMER3_MAT2/SCT0_OUT6/FC7_RXD_SDA_MOSI_DATA/PLU_OUT0/SECURE_GPIO0_27"/>
                   <pin peripheral="FLEXCOMM2" signal="RXD_SDA_MOSI_DATA" pin_num="3" pin_signal="PIO1_24/FC2_RXD_SDA_MOSI_DATA/SCT0_OUT1/SD1_D1/FC3_SSEL3/PLU_OUT6"/>
                   <pin peripheral="FLEXCOMM2" signal="CTS_SDA_SSEL0" pin_num="68" pin_signal="PIO1_26/FC2_CTS_SDA_SSEL0/SCT0_OUT3/CT_INP3/UTICK_CAP1/HS_SPI_SSEL3/PLU_IN5"/>
                   <pin peripheral="FLEXCOMM2" signal="RTS_SCL_SSEL1" pin_num="85" pin_signal="PIO1_27/FC2_RTS_SCL_SSEL1/SD0_D4/CTIMER0_MAT3/CLKOUT/PLU_IN4"/>
-                  <pin peripheral="GPIO" signal="PIO0, 18" pin_num="56" pin_signal="PIO0_18/FC4_CTS_SDA_SSEL0/SD0_WR_PRT/CTIMER1_MAT0/SCT0_OUT1/PLU_IN3/SECURE_GPIO0_18/ACMP0_C"/>
-                  <pin peripheral="GPIO" signal="PIO1, 10" pin_num="40" pin_signal="PIO1_10/FC1_RXD_SDA_MOSI_DATA/CTIMER1_MAT0/SCT0_OUT3"/>
+                  <pin peripheral="GPIO" signal="PIO0, 18" pin_num="56" pin_signal="PIO0_18/FC4_CTS_SDA_SSEL0/SD0_WR_PRT/CTIMER1_MAT0/SCT0_OUT1/PLU_IN3/SECURE_GPIO0_18/ACMP0_C">
+                     <pin_features>
+                        <pin_feature name="direction" value="OUTPUT"/>
+                        <pin_feature name="gpio_init_state" value="true"/>
+                        <pin_feature name="mode" value="pullUp"/>
+                     </pin_features>
+                  </pin>
+                  <pin peripheral="GPIO" signal="PIO1, 10" pin_num="40" pin_signal="PIO1_10/FC1_RXD_SDA_MOSI_DATA/CTIMER1_MAT0/SCT0_OUT3">
+                     <pin_features>
+                        <pin_feature name="direction" value="INPUT"/>
+                     </pin_features>
+                  </pin>
                </pins>
             </function>
          </functions_list>
@@ -321,7 +156,7 @@
             <file path="board/clock_config.h" update_enabled="true"/>
          </generated_project_files>
          <clocks_profile>
-            <processor_version>8.0.0</processor_version>
+            <processor_version>8.0.3</processor_version>
          </clocks_profile>
          <clock_configurations>
             <clock_configuration name="BOARD_BootClockFRO12M">
@@ -507,7 +342,7 @@
             <file path="board/peripherals.h" update_enabled="true"/>
          </generated_project_files>
          <peripherals_profile>
-            <processor_version>8.0.0</processor_version>
+            <processor_version>8.0.3</processor_version>
          </peripherals_profile>
          <functional_groups>
             <functional_group name="BOARD_InitPeripherals" uuid="079a775e-075c-4666-9e9d-a6f53cced094" called_from_default_init="true" id_prefix="" core="cm33_core0">
@@ -541,7 +376,7 @@
             <file path="trustzone/tzm_config.h" update_enabled="true"/>
          </generated_project_files>
          <tee_profile>
-            <processor_version>8.0.0</processor_version>
+            <processor_version>8.0.3</processor_version>
          </tee_profile>
          <ahb>
             <relative_region start="0" size="655360" security="ns_user" memory="PROGRAM_FLASH"/>

@@ -47,7 +47,7 @@
 #define GSM_CFG_AT_PORT_BAUDRATE_115200     115200U
 #define GSM_CFG_AT_PORT_BAUDRATE_921600     921600U
 #define GSM_CFG_AT_PORT_BAUDRATE			GSM_CFG_AT_PORT_BAUDRATE_115200
-
+#define GSM_RESET_PIN
 
 /* Enable network, conn and netconn APIs */
 #define GSM_CFG_NETWORK                     1

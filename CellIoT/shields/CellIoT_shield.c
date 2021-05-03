@@ -22,10 +22,21 @@ usart_dma_handle_t g_uartDmaHandle;
 dma_handle_t g_uartTxDmaHandle;
 dma_handle_t g_uartRxDmaHandle;
 dma_handle_t g_timerTransferHandle;
-/* MRT Register value that will be pushed to MRT INTVAL register when USART RX will pace DMA CH10 */
+/* MRT Register value that will be pushed to MRT INTVAL register when USART RX will pace DMA CH10
+ *
+ * The MSB bit is used for LOAD register while the rest is used for setting the value
+ * Clock Frequency = 96MHz
+ * 0xF4240 = 1000000
+ * |-> 2148483648 * (1/96000000) = 0,0104167s = 10,42ms
+ *
+ * 0x100 = 256
+ * |-> 2147483904 * (1/96000000) = 0,00000267s = 0,267ms = 267µs
+ *
+ * It means after 10,42ms, the MRT Interrupt will fire because there is no data coming from USART RX
+ * and goes to MRT0_IRQHandler() API which is responsible to push the received USART data
+ * to the usart_ll_mbox_id Queue to be processed by usart_ll_thread Task
+*/
 const uint32_t timerRegisterValue = /*0x80000100*/ 0x800F4240;
-
-ctimer_callback_t ctimer_callback_table[] = { Timer_CallbackHandler };
 
 /*! @brief Static table of descriptors */
 #if defined(__ICCARM__)
@@ -241,6 +252,9 @@ int CELLIOTSHIELD_DMAConfig( void )
 	 */
 	DMA_DoChannelSoftwareTrigger(CELLIOTSHIELD_DMA, CELLIOTSHIELD_DMA_RX_CH);
 
+	/* Turn off clock to inputmux to save power. Clock is only needed to make changes */
+    INPUTMUX_Deinit(INPUTMUX);
+
 	return kStatus_Success;
 }
 
@@ -280,4 +294,32 @@ bool CELLIOTSHIELD_PowerUp(uint32_t enable)
 //        GPIO_PinWrite(WIFISHIELD_WLAN_PWRON_GPIO, WIFISHIELD_WLAN_PWRON_PORT, WIFISHIELD_WLAN_PWRON_PIN, 0);
 //    }
       return true;
+}
+
+/*!
+ * @brief Reset the Cellular IoT modem by driving the RESET pin of the modem
+ */
+void CELLIOTSHIELD_ResetModem(void)
+{
+//	volatile uint32_t i;
+
+	/* Drive the Pin low */
+	GPIO_PinWrite(BOARD_INITMONARCHGOARDUINOSHIELD_SKY_nRESET_ID_GPIO,
+				  BOARD_INITMONARCHGOARDUINOSHIELD_SKY_nRESET_ID_PORT,
+				  BOARD_INITMONARCHGOARDUINOSHIELD_SKY_nRESET_ID_PIN,
+				  0);
+
+	/* Wait for 1µs */
+	/* The measured timing without the code below takes 1.1s so it is sufficient enough */
+//    i = 96U;
+//    while ((i--) != 0U)
+//    {
+//        __ASM("nop");
+//    }
+
+	/* Drive the Pin high */
+	GPIO_PinWrite(BOARD_INITMONARCHGOARDUINOSHIELD_SKY_nRESET_ID_GPIO,
+				  BOARD_INITMONARCHGOARDUINOSHIELD_SKY_nRESET_ID_PORT,
+				  BOARD_INITMONARCHGOARDUINOSHIELD_SKY_nRESET_ID_PIN,
+				  1);
 }

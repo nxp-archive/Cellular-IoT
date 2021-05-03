@@ -140,6 +140,12 @@ gsm_init(gsm_evt_fn evt_func, const uint32_t blocking) {
     if (gsm.status.f.dev_present) {
         gsm_core_unlock();
         res = gsm_reset_with_delay(GSM_CFG_RESET_DELAY_DEFAULT, NULL, NULL, blocking);  /* Send reset sequence with delay */
+        while(gsmOK != res && gsm.ll.hardware_reset_attempt < 1)
+        {
+			gsm.ll.hardware_reset_attempt++;
+        	res = gsm_reset_with_delay(GSM_CFG_RESET_DELAY_DEFAULT, NULL, NULL, blocking);  /* Send reset sequence with delay */
+        }
+        if(gsmOK == res)	gsm.ll.hardware_reset_attempt = 0;	/* Reset the value for future try */
         gsm_core_lock();
     }
 #else /* GSM_CFG_RESET_ON_INIT */
@@ -198,7 +204,7 @@ gsm_reset_with_delay(uint32_t delay,
     GSM_MSG_VAR_REF(msg).cmd_def = GSM_CMD_RESET;
     GSM_MSG_VAR_REF(msg).msg.reset.delay = delay;
 
-    return gsmi_send_msg_to_producer_mbox(msg, gsmi_initiate_cmd, 60000);
+    return gsmi_send_msg_to_producer_mbox(msg, gsmi_initiate_cmd, 10000);
 }
 
 /**

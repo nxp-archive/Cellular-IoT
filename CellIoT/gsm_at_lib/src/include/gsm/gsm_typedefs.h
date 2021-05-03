@@ -563,7 +563,7 @@ typedef size_t  (*gsm_ll_send_fn)(const void* data, size_t len);
  *                      or set to `0` when reset is cleared
  * \return          `1` on successful action, `0` otherwise
  */
-typedef uint8_t (*gsm_ll_reset_fn)(uint8_t state);
+typedef void (*gsm_ll_reset_fn)(void);
 
 /**
  * \ingroup         GSM_LL
@@ -575,6 +575,7 @@ typedef struct {
     struct {
         uint32_t baudrate;                      /*!< UART baudrate value */
     } uart;                                     /*!< UART communication parameters */
+    uint8_t hardware_reset_attempt;				/*!< Hardware Reset Attempt over driven RESET pin */
 } gsm_ll_t;
 
 /**
